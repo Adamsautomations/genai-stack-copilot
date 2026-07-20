@@ -1,0 +1,185 @@
+{
+  "summary": {
+    "context_tokens": 151002,
+    "context_chunks": 342,
+    "rag": {
+      "n": 6,
+      "latency_s_median": 17.71,
+      "cost_usd_mean": 0.00983,
+      "cost_usd_total": 0.05898,
+      "prompt_tokens_mean": 28515,
+      "calls_mean": 3,
+      "groundedness_mean": 5
+    },
+    "cag": {
+      "n": 6,
+      "latency_s_median": 10.51,
+      "cost_usd_mean": 0.048955,
+      "cost_usd_total": 0.29373,
+      "prompt_tokens_mean": 151013,
+      "calls_mean": 1,
+      "cache_hit_rate": 0.0,
+      "cache_hit_fraction_mean": 0.0
+    }
+  },
+  "rag": [
+    {
+      "mode": "rag",
+      "answer": "To add persistence to a LangGraph graph, compile your graph with a checkpointer, a store, or both [1][2]. \n\n* **Checkpointers** are used for short-term, thread-scoped memory (like conversation continuity) [7][8].\n* **Stores** are used for long-term, cross-thread memory (like user preferences or shared knowledge) [7][8].\n\n*(Note: If you are using the Agent Server, persistence is handled automatically behind the scenes, and you do not need to configure them manually [1][2].)*\n\n### Python Implementation\n\nYou can use `InMemorySaver` and `InMemoryStore` to add persistence when compiling your graph [2][6]:\n\n```python\nfrom langgraph.checkpoint.memory import InMemorySaver\nfrom langgraph.store.memory import InMemoryStore\n\n# Initialize the checkpointer and store\ncheckpointer = InMemorySaver()\nstore = InMemoryStore()\n\n# Compile the graph with persistence\ngraph = builder.compile(checkpointer=checkpointer, store=store)\n\n# Invoke the graph with a thread_id configuration\nresult = graph.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"Hi, my name is Bob.\"}]},\n    {\"configurable\": {\"thread_id\": \"thread-1\"}},\n)\n```\n\n### TypeScript/JavaScript Implementation\n\nIn TypeScript/JavaScript, you use `MemorySaver` and `MemoryStore` to achieve the same configuration [1]:\n\n```typescript\nimport { MemorySaver, MemoryStore } from \"@langchain/langgraph\";\n\n// Initialize the checkpointer and store\nconst checkpointer = new MemorySaver();\nconst store = new MemoryStore();\n\n// Compile the graph with persistence\nconst graph = builder.compile({ checkpointer, store });\n\n// Invoke the graph with a thread_id configuration\nconst result = await graph.invoke(\n  { messages: [{ role: \"user\", content: \"Hi, my name is Bob.\" }] },\n  { configurable: { thread_id: \"thread-1\" } }\n);\n```",
+      "refused": false,
+      "latency_s": 15.85,
+      "cost_usd": 0.004792,
+      "prompt_tokens": 10720,
+      "thought_tokens": 862,
+      "cached_tokens": 8053,
+      "calls": 3,
+      "groundedness": 5,
+      "relevance": 5
+    },
+    {
+      "mode": "rag",
+      "answer": "In LangGraph, a **checkpointer** is a mechanism that saves a snapshot of the graph's state as checkpoints at each super-step, organized into threads [1]. It serves as a persistence layer that provides agents with short-term, thread-scoped memory, allowing them to save and resume state across interactions [5][6][7]. \n\nWhen you compile a graph with a checkpointer, it enables several key features:\n\n* **Human-in-the-loop Workflows**: It allows humans to inspect, interrupt, and approve graph steps, modifying the state if needed and resuming execution [2][3].\n* **Conversational Memory**: It retains memory of previous interactions on a thread, enabling follow-up messages to build on prior context [2][3].\n* **Time Travel**: It allows users to replay prior graph executions for debugging and fork the graph state at arbitrary checkpoints to explore alternative trajectories [2][3].\n* **Fault-Tolerance**: If a node fails mid-execution, the graph can be restarted from the last successful step [2][3]. It also stores \"pending writes\" from successful nodes during a failed step so they do not need to be re-run upon resumption [2][3].\n\n### Under the Hood and Integrations\nCheckpointers conform to the `BaseCheckpointSaver` interface [4]. They are available through various database and storage backends, including:\n* **In-memory** (`MemorySaver` / `InMemorySaver`) [4][7]\n* **SQLite** (`SqliteSaver`) [4][7]\n* **PostgreSQL** (`PostgresSaver`) [4][7]\n* **MongoDB** (`MongoDBSaver`) [4][7]\n* **Redis** (`RedisSaver`) [4][7]\n* **AWS** (DynamoDB, Bedrock, Valkey) [7]\n* **Azure Cosmos DB** [7]\n* **Cockroach DB** and **Aerospike** [7]\n\n*(Note: When using the Agent Server, checkpointing infrastructure is handled automatically and does not need to be configured manually [1]).*",
+      "refused": false,
+      "latency_s": 12.67,
+      "cost_usd": 0.006988,
+      "prompt_tokens": 11260,
+      "thought_tokens": 953,
+      "cached_tokens": 0,
+      "calls": 3,
+      "groundedness": 5,
+      "relevance": 5
+    },
+    {
+      "mode": "rag",
+      "answer": "To stream output from a LangGraph graph, you can use the `.stream()` method (for the graph API and SDK runs), `stream_events()` (for the Python functional API), or use client libraries like `@langchain/react` on the frontend. \n\nHere are the documented ways to achieve this across different APIs and environments:\n\n### 1. Basic Graph API (JavaScript)\nLangGraph graphs expose a `stream` method to yield streamed outputs as iterators [1]. \n\n```typescript\nfor await (const chunk of await graph.stream(inputs, {\n  streamMode: \"updates\",\n})) {\n  console.log(chunk);\n}\n```\n\n### 2. Including Subgraph Outputs\nTo include outputs from subgraphs, you must explicitly enable them in your streaming options [2][6]:\n\n* **In JavaScript (using the Graph API)**, set `subgraphs: true` [2]:\n  ```typescript\n  for await (const chunk of await graph.stream(\n    { foo: \"foo\" },\n    {\n      subgraphs: true,\n      streamMode: \"updates\",\n    }\n  )) {\n    console.log(chunk);\n  }\n  ```\n\n* **In the LangGraph SDK Client (Python & JavaScript)**, set `stream_subgraphs=True` (Python) or `streamSubgraphs: true` (JS) [3][6].\n\n### 3. Remote Streaming via LangGraph SDK Client\nIf you are interacting with a deployed LangGraph instance using the LangGraph SDK client, you can stream runs as follows:\n\n* **Python SDK Client [6]:**\n  ```python\n  async for chunk in client.runs.stream(\n      thread_id,\n      assistant_id,\n      input={\"foo\": \"foo\"},\n      stream_subgraphs=True,\n      stream_mode=\"updates\",\n  ):\n      print(chunk)\n  ```\n\n* **JavaScript SDK Client [3]:**\n  ```javascript\n  const streamResponse = client.runs.stream(\n    threadID,\n    assistantID,\n    {\n      input: { foo: \"foo\" },\n      streamSubgraphs: true,  \n      streamMode: \"updates\"\n    }\n  );\n  for await (const chunk of streamResponse) {\n    console.log(chunk);\n  }\n  ```\n\n* **cURL API [3]:**\n  ```bash\n  curl --request POST \\\n  --url <DEPLOYMENT_URL>/threads/<THREAD_ID>/runs/stream \\\n  --header 'Content-Type: application/json' \\\n  --data \"{\n    \\\"assistant_id\\\": \\\"agent\\\",\n    \\\"input\\\": {\\\"foo\\\": \\\"foo\\\"},\n    \\\"stream_subgraphs\\\": true,\n    \\\"stream_mode\\\": [\n      \\\"updates\\\"\n    ]\n  }\"\n  ```\n\n### 4. Python Functional API (`stream_events`)\nWhen utilizing the Python Functional API, use `stream_events()` with your configured version to process streamed outputs [5]:\n\n```python\nstream = workflow.stream_events([input_message], config, version=\"v3\")\nfor snapshot in stream.values:\n    print(snapshot)\n```\n\n### 5. Streaming Custom Data (JavaScript)\nTo emit custom, user-defined data from within a node or tool, utilize the `writer` parameter in your runnable configuration and set the `streamMode` to `\"custom\"` [7]:\n\n```typescript\nconst node: GraphNode<typeof State> = async (state, config) => {\n  // Use the writer to emit custom data\n  config.writer({ custom_key: \"Generating custom data inside node\" });\n  return { answer: \"some data\" };\n};\n\n// ... define and compile graph ...\n\n// Stream and listen to custom data\nfor await (const chunk of await graph.stream(inputs, { streamMode: \"custom\" })) {\n  console.log(chunk);\n}\n```\n\n### 6. Frontend React/Angular Integration\nOn the frontend, you can use the `useStream` hook from `@langchain/react` (or `injectStream` in Angular) to reactively access streamed tokens, node outputs, and subgraphs [4][8]:\n\n```typescript\nimport { useStream } from \"@langchain/react\";\n\nfunction Pipeline() {\n  const stream = useStream<typeof graph>({\n    apiUrl: \"http://localhost:2024\",\n    assistantId: \"pipeline\",\n  });\n\n  const classification = stream.values?.classification;\n  const research = stream.values?.research;\n  const graphNodes = [...stream.subgraphs.values()];\n}\n```",
+      "refused": false,
+      "latency_s": 19.35,
+      "cost_usd": 0.016209,
+      "prompt_tokens": 32412,
+      "thought_tokens": 1521,
+      "cached_tokens": 0,
+      "calls": 3,
+      "groundedness": 5,
+      "relevance": 5
+    },
+    {
+      "mode": "rag",
+      "answer": "At its core, the difference between nodes and edges in LangGraph can be summarized as: **nodes do the work, while edges tell what to do next** [1]. \n\nHere are the specific details for each component:\n\n### Nodes\n* **Definition:** Nodes are functions that encode the logic of your agents [1].\n* **Functionality:** They receive the current graph state as input, perform some computation or side-effect (such as executing steps like classify, research, analyze, or synthesize), write output to a specific state key, and return an updated state [1][3]. \n* **Execution:** Once a node completes its operation, it sends messages along one or more edges to other recipient nodes [1].\n\n### Edges\n* **Definition:** Edges are functions that determine which node to execute next based on the current state [1].\n* **Functionality:** They define how the logic is routed, how different nodes communicate with each other, and how the graph decides to stop [2]. \n* **Types of Edges:** Edges can be fixed transitions or conditional branches [1]. Key types include:\n  * **Normal Edges:** Go directly and statically from one node to the next [2][6].\n  * **Conditional Edges:** Call a function to dynamically determine which node(s) to go to next [2].\n  * **Entry Point:** Determines which node to call first when user input arrives [2].\n  * **Conditional Entry Point:** Calls a function to determine which node(s) to call first when user input arrives [2].",
+      "refused": false,
+      "latency_s": 18.44,
+      "cost_usd": 0.004917,
+      "prompt_tokens": 10133,
+      "thought_tokens": 728,
+      "cached_tokens": 3981,
+      "calls": 3,
+      "groundedness": 5,
+      "relevance": 5
+    },
+    {
+      "mode": "rag",
+      "answer": "In LangGraph, a **subgraph** is a graph that is used as a node inside another (parent) graph [1][2]. Subgraphs are useful for building multi-agent systems, reusing sets of nodes across multiple graphs, and distributing development among different teams [1][2].\n\nHere is how subgraphs work and how they are configured:\n\n---\n\n### 1. Defining Subgraph Communication (State Schemas)\nDepending on whether the parent graph and the subgraph share state keys, they can communicate in two ways:\n\n#### Option A: Shared State Keys (Direct Addition)\nIf the parent graph and the subgraph share state keys, you can pass the compiled subgraph directly into `add_node` without a wrapper function [3]. The subgraph automatically reads from and writes to the parent's state channels [3].\n\n```python\nfrom typing_extensions import TypedDict\nfrom langgraph.graph.state import StateGraph, START\n\nclass State(TypedDict):\n    foo: str\n\n# Define Subgraph\ndef subgraph_node_1(state: State):\n    return {\"foo\": \"hi! \" + state[\"foo\"]}\n\nsubgraph_builder = StateGraph(State)\nsubgraph_builder.add_node(subgraph_node_1)\nsubgraph_builder.add_edge(START, \"subgraph_node_1\")\nsubgraph = subgraph_builder.compile()\n\n# Define Parent Graph\nbuilder = StateGraph(State)\nbuilder.add_node(\"node_1\", subgraph)  # Pass the compiled subgraph directly\nbuilder.add_edge(START, \"node_1\")\ngraph = builder.compile()\n```\n\n#### Option B: Different State Schemas (Inside a Node Function)\nIf the parent graph and the subgraph have different state schemas (no shared keys), you must invoke the subgraph inside a node function [3][4]. This function transforms the parent state into the subgraph state before calling `.invoke()`, and then transforms the output back into the parent state's schema [3][4].\n\n```python\nclass SubgraphState(TypedDict):\n    bar: str\n\n# Subgraph definition\nsubgraph_builder = StateGraph(SubgraphState)\n# ...add nodes and compile to `subgraph`\n\n# Parent state definition\nclass State(TypedDict):\n    foo: str\n\n# Call subgraph inside a parent node function\ndef call_subgraph(state: State):\n    # 1. Transform parent state to subgraph state and invoke\n    subgraph_output = subgraph.invoke({\"bar\": state[\"foo\"]})  \n    # 2. Transform result back to parent state\n    return {\"foo\": subgraph_output[\"bar\"]}\n\nbuilder = StateGraph(State)\nbuilder.add_node(\"node_1\", call_subgraph)\nbuilder.add_edge(START, \"node_1\")\ngraph = builder.compile()\n```\n\n---\n\n### 2. Navigating to a Parent Graph Node\nYou can navigate from a node inside a subgraph to a completely different node/subgraph in the parent graph by returning a `Command` object with `graph=Command.PARENT` [1]:\n\n```python\nfrom typing_extensions import Literal\nfrom langgraph.types import Command\n\ndef my_node(state: State) -> Command[Literal[\"other_subgraph\"]]:\n    return Command(\n        update={\"foo\": \"bar\"},\n        goto=\"other_subgraph\",  # A node in the parent graph\n        graph=Command.PARENT\n    )\n```\n*(Note: If you send updates to the parent state this way, you must define a reducer for the updated key in the parent graph state [1].)*\n\n---\n\n### 3. Subgraph Persistence\nHow a subgraph's internal state is persisted between executions is determined by the `checkpointer` parameter passed to `.compile()` [3]:\n\n| Mode | `checkpointer=` | Behavior |\n| :--- | :--- | :--- |\n| **Per-invocation (Default)** | `None` | Each call starts fresh, but inherits the parent's checkpointer to support interrupts and durable execution within a single call [3]. |\n| **Per-thread** | `True` | State accumulates across calls on the same thread. Each call picks up where the last one left off [3]. |\n| **Stateless** | `False` | No checkpointing at all. Runs like a plain function call; does not support interrupts or durable execution [3]. |\n\n---\n\n### 4. Viewing Subgraph State\nWhen a stateful checkpointer is used, you can inspect a subgraph's state by passing `subgraphs=True` to the `.get_state()` method [3][5]:\n\n```python\n# View subgraph state for the current invocation\nsubgraph_state = graph.get_state(config, subgraphs=True).tasks[0].state\n```\n*Note: This requires that the subgraph be statically discoverable (added as a node or called inside a node) [3][5].*\n\n---\n\n### 5. Streaming Subgraph Outputs\nTo include outputs from subgraphs in your stream, set `subgraphs=True` (or `stream_subgraphs=True` depending on the client API) [3][7][8]:\n\n```python\n# Event streaming in python\nstream = graph.stream_events({\"foo\": \"foo\"}, version=\"v3\")\nfor event in stream:\n    if event[\"method\"] == \"updates\":\n        # Prints namespace and data, containing nested subgraph identifiers\n        print(event[\"params\"][\"namespace\"], event[\"params\"][\"data\"])\n```",
+      "refused": false,
+      "latency_s": 37.96,
+      "cost_usd": 0.014766,
+      "prompt_tokens": 78266,
+      "thought_tokens": 1140,
+      "cached_tokens": 65385,
+      "calls": 3,
+      "groundedness": 5,
+      "relevance": 5
+    },
+    {
+      "mode": "rag",
+      "answer": "In LangGraph, you can add two types of memory to an agent: **short-term memory** (for tracking multi-turn conversations) and **long-term memory** (for storing data across sessions) [3][4].\n\n---\n\n### 1. Short-Term Memory (Thread-Level Persistence)\nShort-term memory stores conversation history using a checkpointer [2][5][8].\n\n#### Option A: Using `StateGraph`\nYou can compile your graph with a checkpointer (such as `InMemorySaver`) and provide a `thread_id` in the configuration when invoking the graph [5]:\n\n```python\nfrom langgraph.checkpoint.memory import InMemorySaver\nfrom langgraph.graph import StateGraph\n\ncheckpointer = InMemorySaver()\n\nbuilder = StateGraph(...)\ngraph = builder.compile(checkpointer=checkpointer)\n\ngraph.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"hi! i am Bob\"}]},\n    {\"configurable\": {\"thread_id\": \"1\"}},\n)\n```\n\n#### Option B: Using the `create_agent` Factory\nYou can pass the `checkpointer` parameter directly to the `create_agent` function [8]:\n\n```python\nfrom langchain.agents import create_agent\nfrom langgraph.checkpoint.memory import InMemorySaver\n\ndef get_user_info() -> str:\n    \"\"\"Look up information about the current user.\"\"\"\n    return \"No user profile on file.\"\n\nagent = create_agent(\n    model=\"openai:gpt-5.5\",\n    tools=[get_user_info],\n    checkpointer=InMemorySaver(),\n)\n\nthread_config = {\"configurable\": {\"thread_id\": \"1\"}}\nresponse = agent.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"Hi! My name is Bob.\"}]},\n    thread_config,\n)[\"messages\"][-1].content\n```\n\n---\n\n### 2. Long-Term Memory\nLong-term memory stores user-specific or application-level data across sessions. To add long-term memory, create a store and pass it to `create_agent` using the `store` parameter [1].\n\n#### Option A: In-Memory Store\n`InMemoryStore` saves data to an in-memory dictionary (not recommended for production) [1]:\n\n```python\nfrom langchain.agents import create_agent\nfrom langchain_core.runnables import Runnable\nfrom langgraph.store.memory import InMemoryStore\n\n# InMemoryStore saves data to an in-memory dictionary.\nstore = InMemoryStore()\n\nagent: Runnable = create_agent(\n    \"claude-sonnet-4-6\",\n    tools=[],\n    store=store,\n)\n```\n\n#### Option B: PostgreSQL Store\nFor production, you can use a database-backed store such as `PostgresStore` [1]:\n\n```bash\npip install langgraph-checkpoint-postgres\n```\n\n```python\nfrom langchain.agents import create_agent\nfrom langchain_core.runnables import Runnable\nfrom langgraph.store.postgres import PostgresStore\n\nDB_URI = \"postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable\"\n\nwith PostgresStore.from_conn_string(DB_URI) as store:\n    store.setup()\n    agent: Runnable = create_agent(\n        \"claude-sonnet-4-6\",\n        tools=[],\n        store=store,\n    )\n```",
+      "refused": false,
+      "latency_s": 16.98,
+      "cost_usd": 0.011306,
+      "prompt_tokens": 28300,
+      "thought_tokens": 1418,
+      "cached_tokens": 12164,
+      "calls": 3,
+      "groundedness": 5,
+      "relevance": 5
+    }
+  ],
+  "cag": [
+    {
+      "mode": "cag",
+      "answer": "Based on the provided documentation, if you are deploying your graph using LangSmith's **Agent Server**, you should **not** configure persistence (the checkpointer and memory store) directly in your graph code [Agent Server \u203a /Parts of a deployment/Graphs/Graph loading and compilation]. Instead, the server automatically injects the checkpointer and memory store configured for that deployment at runtime [Agent Server \u203a /Parts of a deployment/Graphs/Graph loading and compilation]. \n\nBy default, the Agent Server persists three types of data backed by PostgreSQL [Agent Server \u203a /Parts of a deployment/]:\n1. **Core resource data**: Assistants, threads, runs, and cron jobs.\n2. **Checkpoints (short-term memory)**: Snapshots of graph execution state written at each step to make runs durable. You can also configure this backend to use MongoDB or a custom implementation [Agent Server \u203a /Parts of a deployment/].\n3. **Store (long-term memory)**: Memory that persists across threads, enabling agents to retain information between separate conversations. This can also be replaced with a custom store [Agent Server \u203a /Parts of a deployment/].\n\nThe provided documentation does not cover how to manually configure or code a local checkpointer (e.g., for local development) outside of the Agent Server environment.",
+      "refused": false,
+      "latency_s": 9.021,
+      "cost_usd": 0.049476,
+      "prompt_tokens": 151013,
+      "thought_tokens": 1398,
+      "cached_tokens": 0,
+      "calls": 1,
+      "cache_hit": false,
+      "cache_hit_fraction": 0.0
+    },
+    {
+      "mode": "cag",
+      "answer": "In LangGraph, a checkpointer manages **checkpoints**, which are short-term memory snapshots of a graph's execution state written at each step [Agent Server \u203a /Parts of a deployment/]. \n\nThese checkpoints make runs durable: if a worker is interrupted, the execution can resume from the last saved checkpoint rather than starting over from the beginning [Agent Server \u203a /Parts of a deployment/]. \n\nAdditional details about checkpointers include:\n* **Durability Modes**: The frequency of checkpoint writes is controlled by durability modes. The default `async` mode writes a checkpoint after each step, while the `exit` mode stores only the final state of the run [Agent Server \u203a /Parts of a deployment/].\n* **Backends**: Checkpoints are stored in PostgreSQL by default, but the backend can be switched to MongoDB or a custom implementation [Agent Server \u203a /Parts of a deployment/].\n* **Server Injection**: When deploying with the Agent Server, the checkpointer is automatically injected at runtime; developers are advised not to configure the checkpointer manually within their graph code [Agent Server \u203a /Parts of a deployment/Graphs/].",
+      "refused": false,
+      "latency_s": 9.01,
+      "cost_usd": 0.047898,
+      "prompt_tokens": 151011,
+      "thought_tokens": 804,
+      "cached_tokens": 0,
+      "calls": 1,
+      "cache_hit": false,
+      "cache_hit_fraction": 0.0
+    },
+    {
+      "mode": "cag",
+      "answer": "To stream output from a LangGraph graph deployed on an Agent Server, you can use the LangGraph SDKs (Python or JavaScript) or the HTTP API [How to collect user feedback for Agent Server runs \u203a /]. \n\nHere are the primary ways to stream output:\n\n### 1. Using the Python SDK\nYou can use `client.runs.stream` and iterate over the stream using an `async for` loop. Specify your desired stream mode (e.g., `\"updates\"` or `\"values\"`) using the `stream_mode` parameter [How to collect user feedback for Agent Server runs \u203a /]:\n\n```python\nfrom langgraph_sdk import get_client\n\nclient = get_client(url=\"<DEPLOYMENT_URL>\", api_key=\"<API_KEY>\")\n\nasync for event in client.runs.stream(\n    thread_id,\n    \"agent\",\n    input={\n        \"messages\": [\n            {\"role\": \"user\", \"content\": \"Your input here\"}\n        ]\n    },\n    stream_mode=\"updates\",\n):\n    if event.event == \"updates\":\n        print(event.data)\n```\n*(Source: [How to collect user feedback for Agent Server runs \u203a /])*\n\n### 2. Using the JavaScript SDK\nYou can similarly use `client.runs.stream` with an asynchronous generator [How to collect user feedback for Agent Server runs \u203a /]:\n\n```javascript\nimport { Client } from \"@langchain/langgraph-sdk\";\n\nconst client = new Client({ apiUrl: \"<DEPLOYMENT_URL>\", apiKey: \"<API_KEY>\" });\n\nconst streamResponse = client.runs.stream(threadId, \"agent\", {\n  input: {\n    messages: [{ role: \"user\", content: \"Your input here\" }],\n  },\n  streamMode: \"updates\",\n});\n\nfor await (const event of streamResponse) {\n  if (event.event === \"updates\") {\n    console.log(event.data);\n  }\n}\n```\n*(Source: [How to collect user feedback for Agent Server runs \u203a /])*\n\n### 3. Using the cURL / HTTP API\nYou can send a `POST` request to the streaming run endpoint [How to collect user feedback for Agent Server runs \u203a /]:\n\n```bash\ncurl --request POST \\\n  --url \"<DEPLOYMENT_URL>/threads/<THREAD_ID>/runs/stream\" \\\n  --header \"Content-Type: application/json\" \\\n  --header \"x-api-key: <API_KEY>\" \\\n  --data '{\n    \"assistant_id\": \"agent\",\n    \"input\": {\n      \"messages\": [\n        {\n          \"role\": \"user\",\n          \"content\": \"Your input here\"\n        }\n      ]\n    },\n    \"stream_mode\": \"updates\"\n  }'\n```\n*(Source: [How to collect user feedback for Agent Server runs \u203a /])*\n\n### 4. Event Streaming V2 APIs (Alternative)\nIf you have V2 event streaming enabled (`FF_V2_EVENT_STREAMING`), you can also use these dedicated endpoints for real-time stream events [Agent Server changelog \u203a /v0.11/Changes/]:\n* `POST /threads/{thread_id}/stream/events`\n* `WS /threads/{thread_id}/stream/events` (WebSockets)",
+      "refused": false,
+      "latency_s": 12.004,
+      "cost_usd": 0.049814,
+      "prompt_tokens": 151013,
+      "thought_tokens": 1064,
+      "cached_tokens": 0,
+      "calls": 1,
+      "cache_hit": false,
+      "cache_hit_fraction": 0.0
+    },
+    {
+      "mode": "cag",
+      "answer": "The provided documentation does not contain information explaining the difference between a node and an edge in LangGraph.",
+      "refused": false,
+      "latency_s": 7.037,
+      "cost_usd": 0.047252,
+      "prompt_tokens": 151016,
+      "thought_tokens": 759,
+      "cached_tokens": 0,
+      "calls": 1,
+      "cache_hit": false,
+      "cache_hit_fraction": 0.0
+    },
+    {
+      "mode": "cag",
+      "answer": "Based on the provided documentation, there is no comprehensive explanation of how subgraphs conceptually or generally work in LangGraph. However, the documentation does mention several specific technical details about how subgraphs are handled:\n\n* **Subgraph Checkpointing**: You can enable subgraph checkpointing by implementing a `RemoteCheckpointer`, which enhances task execution reliability [Agent Server changelog \u203a /v0.11/Changes/].\n* **Event and Message Streaming**: You can stream custom events and messages from subgraphs (for example, by setting `stream_subgraphs=True` when using `stream_mode=[\"custom\"]` on JS deployments) [Agent Server changelog \u203a /v0.11/Changes/].\n* **Distributed Tracing**: You can call a `RemoteGraph` inside a parent graph's node (acting as a subgraph node). When configured with `distributed_tracing=True`, the trace context is automatically propagated, and the remote graph's execution appears as a child of the parent trace [Distributed tracing with Agent Server \u203a /].",
+      "refused": false,
+      "latency_s": 47.789,
+      "cost_usd": 0.050013,
+      "prompt_tokens": 151011,
+      "thought_tokens": 1670,
+      "cached_tokens": 0,
+      "calls": 1,
+      "cache_hit": false,
+      "cache_hit_fraction": 0.0
+    },
+    {
+      "mode": "cag",
+      "answer": "Based on the provided documentation, when deploying a LangGraph agent using the Agent Server, you **do not configure the checkpointer and memory store directly in your graph code** because the server automatically injects them at runtime [Agent Server \u203a /Parts of a deployment/Graphs/]. \n\nInstead, the Agent Server automatically persists and manages two types of memory for your deployment, backed by PostgreSQL by default [Agent Server \u203a /Parts of a deployment/]:\n\n*   **Checkpoints (Short-term memory):** These are snapshots of the graph's execution state written at each step. They make runs durable, allowing them to resume if interrupted [Agent Server \u203a /Parts of a deployment/]. By default, these are stored in PostgreSQL, but you can switch to MongoDB or a custom implementation [Agent Server \u203a /Parts of a deployment/].\n*   **Store (Long-term memory):** This memory persists across different threads, enabling agents to retain information between separate conversations [Agent Server \u203a /Parts of a deployment/]. This is also stored in PostgreSQL by default but can be replaced with a custom implementation [Agent Server \u203a /Parts of a deployment/].\n\nIf you are building with **Deep Agents** (which shares the same stack), long-term memory is already built directly into the harness [Build \u203a /].\n\n*(Note: The provided documentation does not contain code examples showing how to programmatically read or write to the memory store from within your node functions.)*",
+      "refused": false,
+      "latency_s": 15.366,
+      "cost_usd": 0.049276,
+      "prompt_tokens": 151013,
+      "thought_tokens": 1289,
+      "cached_tokens": 0,
+      "calls": 1,
+      "cache_hit": false,
+      "cache_hit_fraction": 0.0
+    }
+  ]
+}

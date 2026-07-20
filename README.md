@@ -110,6 +110,77 @@ reasoning enabled; dropping it would cut latency and quality together.
 
 ---
 
+## RAG vs CAG, measured
+
+Same six questions, same model, same judge. CAG holds a 151k-token slice of the
+corpus in `systemInstruction` and answers in a single call; RAG retrieves.
+
+| | RAG | CAG |
+|---|---|---|
+| Median latency | 17.7 s | **10.5 s** |
+| Cost per query | **$0.0098** | $0.0490 |
+| Prompt tokens per query | 28,515 | 151,013 |
+| Model calls | 3 | **1** |
+| Cache hit rate | — | **0 / 6** |
+| Corpus reachable | **10,250 chunks (100%)** | 342 chunks (3.3%) |
+| Groundedness | 5.00 | not comparable (see below) |
+
+**CAG is ~1.7× faster and 5× more expensive.** The speed is real and structural
+— one call instead of three, no retrieval round-trip. The cost is also
+structural: you pay for the whole corpus slice on every question, however small
+the question.
+
+### The finding that actually matters: the cache never engaged
+
+Caching is the entire economic argument for CAG. It did not happen — **0 hits
+across 6 sequential calls** with a byte-identical 151k-token prefix.
+
+This was not for lack of checking. An isolated probe earlier *did* hit, once:
+
+```
+call 1: prompt=27011  cached=0
+call 2: prompt=27011  cached=26586   (98.4% hit)
+call 3: prompt=27011  cached=0
+```
+
+So implicit caching on this deployment is real but best-effort, and in a
+realistic workload — where other calls interleave between questions — it
+engaged **zero times**. Explicit `cachedContents`, which *would* be
+deterministic, returns 404 on a Vertex Express key.
+
+The conclusion is not "CAG is bad." It is: **on this deployment CAG's cost
+cannot be relied on, because the mechanism that makes it cheap is not under my
+control.** A 5× cost premium that *might* fall to ~1× on an unpredictable
+fraction of calls is not something to build a budget on. On a deployment with
+explicit cache control the arithmetic could invert entirely.
+
+### Why groundedness isn't compared
+
+The judge grades an answer against the passages it was given. RAG has passages;
+CAG's evidence is the entire 151k-token block, and handing that to the judge per
+question would cost more than the run being measured.
+
+Scoring CAG against *empty* passages would have produced a near-zero
+groundedness for every answer regardless of quality — a rigged result wearing a
+number. So the comparison reports what it can measure fairly and states the
+asymmetry, which is itself a finding: **with RAG you can audit why an answer was
+given; with CAG you largely cannot.**
+
+### When each one wins
+
+- **CAG** — small, stable corpus that fits comfortably in context; latency
+  matters more than cost; you control caching. Simplest possible system: no
+  retriever, no ranker, no grader, nothing to tune.
+- **RAG** — corpus larger than the context window (this one is ~30× larger),
+  cost scales with the question rather than the corpus, and every answer comes
+  with the passages that justify it.
+
+The deciding constraint isn't quality, it's that **CAG doesn't degrade as a
+corpus grows — it stops being applicable.** At 3.3% coverage here, most
+questions are simply outside what it can see.
+
+---
+
 ## Decisions worth explaining
 
 ### Retrieval is hybrid, and degrades instead of failing

@@ -1,0 +1,50 @@
+Building CAG context (budget 150,000 tokens) …
+  342 chunks, 151,002 tokens, sources={'langchain': 171, 'llamaindex': 171}
+
+[1/6] How do I add persistence to a LangGraph graph?
+    RAG   15.8s  $0.00479  prompt= 10720  calls=3  g=5
+    CAG    9.0s  $0.04948  prompt=151013  cached=     0  hit=False
+[2/6] What is a checkpointer in LangGraph?
+    RAG   12.7s  $0.00699  prompt= 11260  calls=3  g=5
+    CAG    9.0s  $0.04790  prompt=151011  cached=     0  hit=False
+[3/6] How do I stream output from a LangGraph graph?
+    RAG   19.4s  $0.01621  prompt= 32412  calls=3  g=5
+    CAG   12.0s  $0.04981  prompt=151013  cached=     0  hit=False
+[4/6] What is the difference between a node and an edge in LangGra
+    RAG   18.4s  $0.00492  prompt= 10133  calls=3  g=5
+    CAG    7.0s  $0.04725  prompt=151016  cached=     0  hit=False
+[5/6] How do subgraphs work in LangGraph?
+    RAG   38.0s  $0.01477  prompt= 78266  calls=3  g=5
+    CAG   47.8s  $0.05001  prompt=151011  cached=     0  hit=False
+[6/6] How do I add memory to a LangGraph agent?
+    RAG   17.0s  $0.01131  prompt= 28300  calls=3  g=5
+    CAG   15.4s  $0.04928  prompt=151013  cached=     0  hit=False
+
+--- summary ---
+{
+  "context_tokens": 151002,
+  "context_chunks": 342,
+  "rag": {
+    "n": 6,
+    "latency_s_median": 17.71,
+    "cost_usd_mean": 0.00983,
+    "cost_usd_total": 0.05898,
+    "prompt_tokens_mean": 28515,
+    "calls_mean": 3,
+    "groundedness_mean": 5
+  },
+  "cag": {
+    "n": 6,
+    "latency_s_median": 10.51,
+    "cost_usd_mean": 0.048955,
+    "cost_usd_total": 0.29373,
+    "prompt_tokens_mean": 151013,
+    "calls_mean": 1,
+    "cache_hit_rate": 0.0,
+    "cache_hit_fraction_mean": 0.0
+  }
+}
+
+  CAG costs 5.0x RAG per query on this corpus slice.
+
+Wrote C:\Projects\genai-stack-copilot\data\evals\rag_vs_cag.json
