@@ -3,9 +3,12 @@ __pycache__/
 *.py[cod]
 .env
 .env.local
+# Generated artifacts. Eval *results* are committed deliberately (see
+# data/evals/) — they are the evidence behind the README's numbers.
 data/corpus/
 data/*.jsonl
 data/*.json
+data/*.txt
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
