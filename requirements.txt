@@ -1,0 +1,30 @@
+# --- Orchestration ---------------------------------------------------------
+langgraph>=0.2.60
+langchain-core>=0.3.25
+
+# --- Ingestion / chunking --------------------------------------------------
+llama-index-core>=0.12.10
+
+# --- Embeddings ------------------------------------------------------------
+# fastembed is ONNX-based: CPU-fast, no torch dependency, no API cost.
+# Swapping to Azure OpenAI embeddings is a config change, not a rewrite.
+fastembed>=0.5.0
+
+# --- Retrieval -------------------------------------------------------------
+azure-search-documents>=12.0.0
+azure-core>=1.41.0
+
+# --- Generation ------------------------------------------------------------
+# Official Anthropic SDK. Called directly from LangGraph nodes rather than
+# through a wrapper, so adaptive thinking, effort, and prompt caching
+# (which the CAG path depends on) are all reachable.
+anthropic>=0.45.0
+
+# --- Serving ---------------------------------------------------------------
+fastapi>=0.115.6
+uvicorn[standard]>=0.34.0
+
+# --- Utilities -------------------------------------------------------------
+httpx>=0.28.1
+python-dotenv>=1.0.1
+pydantic>=2.10.4

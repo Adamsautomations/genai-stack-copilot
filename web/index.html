@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenAI Stack Copilot</title>
+<style>
+  :root{
+    --canvas:#eeeff2; --lift:#f5f6f7; --ink:#181f2f; --muted:#5a6478;
+    --faint:#8b93a3; --line:#d8dbe1; --cobalt:#1d4fd7; --green:#248252;
+    --card:#ffffff;
+    --r:10px;
+    --font:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:var(--font); color:var(--ink);
+    background:
+      radial-gradient(ellipse 120% 80% at 50% 0%, var(--lift), var(--canvas)),
+      var(--canvas);
+    background-attachment:fixed;
+    font-size:14px; line-height:1.55;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:radial-gradient(circle, rgba(24,31,47,.05) 1.1px, transparent 1.1px);
+    background-size:24px 24px;
+  }
+  .wrap{position:relative; z-index:1; max-width:860px; margin:0 auto; padding:48px 24px 80px}
+
+  header{margin-bottom:28px}
+  .kicker{font-size:11px; font-weight:600; letter-spacing:2.2px; color:var(--cobalt); text-transform:uppercase}
+  h1{font-size:30px; font-weight:640; margin:10px 0 6px; letter-spacing:-.2px}
+  .sub{color:var(--muted); margin:0}
+
+  form{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px; box-shadow:0 2px 4px rgba(24,31,47,.05); margin-bottom:20px;
+  }
+  textarea{
+    width:100%; border:0; outline:0; resize:vertical; min-height:64px;
+    font:inherit; color:var(--ink); background:transparent; padding:6px 6px 10px;
+  }
+  textarea::placeholder{color:var(--faint)}
+  .row{display:flex; gap:10px; align-items:center; border-top:1px solid var(--line); padding-top:12px; flex-wrap:wrap}
+
+  .seg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+  .seg button{
+    border:0; background:var(--card); color:var(--muted); font:inherit; font-weight:520;
+    padding:7px 14px; cursor:pointer;
+  }
+  .seg button[aria-pressed="true"]{background:var(--ink); color:#fff}
+  .seg button+button{border-left:1px solid var(--line)}
+
+  .spacer{flex:1}
+  .go{
+    border:0; border-radius:8px; background:var(--ink); color:#fff; font:inherit;
+    font-weight:560; padding:9px 20px; cursor:pointer;
+  }
+  .go:disabled{opacity:.5; cursor:default}
+
+  .hint{font-size:12px; color:var(--faint); margin:10px 2px 0}
+  .hint button{
+    border:1px solid var(--line); background:var(--card); color:var(--muted);
+    border-radius:999px; padding:4px 11px; font:inherit; font-size:12px;
+    cursor:pointer; margin:0 6px 6px 0;
+  }
+  .hint button:hover{border-color:var(--cobalt); color:var(--cobalt)}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:20px 22px; box-shadow:0 2px 4px rgba(24,31,47,.05); margin-bottom:16px;
+  }
+  .card h2{font-size:11px; font-weight:700; letter-spacing:1.6px; color:var(--faint);
+    text-transform:uppercase; margin:0 0 12px}
+
+  .answer{white-space:pre-wrap}
+  .answer cite{
+    font-style:normal; color:var(--cobalt); font-weight:600; font-size:12px;
+    vertical-align:super; padding:0 1px;
+  }
+  .refused{border-left:3px solid var(--faint); padding-left:14px; color:var(--muted)}
+
+  ol.cites{margin:0; padding-left:20px}
+  ol.cites li{margin-bottom:8px}
+  ol.cites a{color:var(--cobalt); text-decoration:none}
+  ol.cites a:hover{text-decoration:underline}
+  ol.cites .where{color:var(--faint); font-size:12px; display:block}
+
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:14px}
+  .stat .k{font-size:11px; color:var(--faint); text-transform:uppercase; letter-spacing:.8px}
+  .stat .v{font-size:19px; font-weight:620; font-variant-numeric:tabular-nums}
+  .stat .v.good{color:var(--green)}
+  .stat .v.accent{color:var(--cobalt)}
+
+  pre.trace{
+    font-family:var(--mono); font-size:12px; color:var(--muted); margin:0;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .err{border-left:3px solid #b23; padding-left:14px; color:var(--muted)}
+  .spin{display:inline-block; width:12px; height:12px; border:2px solid var(--line);
+    border-top-color:var(--cobalt); border-radius:50%; animation:s .7s linear infinite;
+    vertical-align:-2px; margin-right:7px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  footer{color:var(--faint); font-size:12px; text-align:center; margin-top:34px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Retrieval · Evaluation</div>
+    <h1>GenAI Stack Copilot</h1>
+    <p class="sub">Answers from the LangChain, LangGraph, LangSmith and LlamaIndex
+    documentation — with citations, and an honest refusal when the corpus doesn't cover it.</p>
+  </header>
+
+  <form id="f">
+    <textarea id="q" placeholder="Ask about LangGraph, LangChain, or LlamaIndex…"></textarea>
+    <div class="row">
+      <div class="seg" role="group" aria-label="Retrieval mode">
+        <button type="button" id="m-rag" aria-pressed="true">RAG</button>
+        <button type="button" id="m-cag" aria-pressed="false">CAG</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="go" id="go" type="submit">Ask</button>
+    </div>
+  </form>
+
+  <div class="hint" id="examples"></div>
+  <div id="out"></div>
+
+  <footer>Built by Adam Bok · <a href="https://frameworkzero.com" style="color:var(--cobalt);text-decoration:none">frameworkzero.com</a></footer>
+</div>
+
+<script>
+const EXAMPLES = [
+  "How do I add persistence to a LangGraph graph?",
+  "What is the difference between a node and an edge in LangGraph?",
+  "How does LlamaIndex chunk documents by default?",
+  "How do I stream partial output from a graph?",
+];
+
+let mode = "rag";
+const $ = (id) => document.getElementById(id);
+const out = $("out");
+
+for (const [id, m] of [["m-rag","rag"],["m-cag","cag"]]) {
+  $(id).onclick = () => {
+    mode = m;
+    $("m-rag").setAttribute("aria-pressed", String(m === "rag"));
+    $("m-cag").setAttribute("aria-pressed", String(m === "cag"));
+  };
+}
+
+$("examples").innerHTML = EXAMPLES.map(
+  (e) => `<button type="button" data-q="${e.replace(/"/g,"&quot;")}">${e}</button>`
+).join("");
+$("examples").onclick = (e) => {
+  const q = e.target.dataset?.q;
+  if (q) { $("q").value = q; $("f").requestSubmit(); }
+};
+
+const esc = (s) => String(s ?? "").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const withCites = (s) => esc(s).replace(/\[(\d+)\]/g, '<cite>[$1]</cite>');
+
+function render(r) {
+  const u = r.usage || {};
+  const cost = (u.cost_usd ?? 0);
+  const cache = r.cache;
+  const ret = r.retrieval;
+
+  const stats = [
+    ["Mode", r.mode.toUpperCase(), "accent"],
+    ["Latency", (r.latency_s ?? 0).toFixed(2) + "s", ""],
+    ["Cost", "$" + cost.toFixed(5), ""],
+    ["Model calls", u.calls ?? 0, ""],
+  ];
+  if (cache) stats.push(["Cache", cache.hit ? "HIT" : "write", cache.hit ? "good" : ""]);
+  if (ret) stats.push(["Passages", ret.passages_returned, ""]);
+
+  out.innerHTML = `
+    <div class="card">
+      <h2>${r.refused ? "No answer" : "Answer"}</h2>
+      <div class="answer ${r.refused ? "refused" : ""}">${withCites(r.answer)}</div>
+    </div>
+    ${r.citations?.length ? `<div class="card"><h2>Sources</h2><ol class="cites">${
+      r.citations.map(c => `<li><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a>
+        <span class="where">${esc(c.heading || c.source)}</span></li>`).join("")
+    }</ol></div>` : ""}
+    <div class="card"><h2>Telemetry</h2><div class="stats">${
+      stats.map(([k,v,cls]) => `<div class="stat"><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`).join("")
+    }</div></div>
+    ${r.trace?.length ? `<div class="card"><h2>Graph trace</h2><pre class="trace">${
+      r.trace.map((t,i) => `${String(i+1).padStart(2)}. ${esc(t)}`).join("\n")
+    }</pre></div>` : ""}`;
+}
+
+$("f").onsubmit = async (e) => {
+  e.preventDefault();
+  const question = $("q").value.trim();
+  if (!question) return;
+  $("go").disabled = true;
+  out.innerHTML = `<div class="card"><span class="spin"></span>Thinking…</div>`;
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ question, mode }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      out.innerHTML = `<div class="card"><h2>Stopped</h2><div class="err">${esc(data.message || data.error || "Request failed")}</div></div>`;
+    } else {
+      render(data);
+    }
+  } catch (err) {
+    out.innerHTML = `<div class="card"><h2>Error</h2><div class="err">${esc(err.message)}</div></div>`;
+  } finally {
+    $("go").disabled = false;
+  }
+};
+</script>
+</body>
+</html>
