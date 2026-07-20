@@ -9,6 +9,9 @@ data/corpus/
 data/*.jsonl
 data/*.json
 data/*.txt
+# Local server logs. Transient run noise, not evidence — unlike data/evals/.
+data/*.err
+data/*.out
 # …except the packed CAG prefix. It is committed on purpose: the code treats it
 # as frozen bytes, and a prefix regenerated per-environment could drift and
 # silently break caching. ~550 KB.

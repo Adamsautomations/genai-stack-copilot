@@ -1,5 +1,0 @@
-INFO:     Started server process [1460]
-INFO:     Waiting for application startup.
-INFO copilot: settings loaded; index=genai-stack-docs
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8077 (Press CTRL+C to quit)

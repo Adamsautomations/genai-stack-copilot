@@ -14,11 +14,19 @@ fastembed>=0.5.0
 azure-search-documents>=12.0.0
 azure-core>=1.41.0
 
+# The self-hosted half of the retrieval comparison: Postgres does HNSW via
+# `pgvector` and BM25-ish ranking via `tsvector`/`ts_rank`, so the same hybrid
+# query runs on both backends and the results can be diffed
+# (src/retrieval/pgvector_store.py). Imported lazily there, declared here.
+# psycopg[binary] ships the libpq wheel — no system Postgres client needed.
+psycopg[binary]>=3.2.0
+pgvector>=0.3.6
+
 # --- Generation ------------------------------------------------------------
-# Official Anthropic SDK. Called directly from LangGraph nodes rather than
-# through a wrapper, so adaptive thinking, effort, and prompt caching
-# (which the CAG path depends on) are all reachable.
-anthropic>=0.45.0
+# Gemini is reached over plain HTTP (`httpx`, below) rather than through a
+# vendor SDK: Vertex *Express* keys authenticate with `x-goog-api-key` against
+# the publisher-model endpoint, which is a narrower surface than the full
+# Vertex SDK expects. See src/llm.py.
 
 # --- Serving ---------------------------------------------------------------
 fastapi>=0.115.6
