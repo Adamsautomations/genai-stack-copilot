@@ -65,6 +65,51 @@ measures "gave a good answer" ships as one that answers everything:
 
 ---
 
+## Measured results
+
+22 questions, judged by `gemini-3.5-flash` strictly against the passages the
+pipeline actually retrieved. Raw output in [`data/evals/`](data/evals/).
+
+| Metric | Result |
+|---|---|
+| Judge failures | **0** / 15 judged |
+| Answer rate on `answerable` | **100%** (15/15) |
+| Correct refusal rate | **100%** (7/7) |
+| **False answers** (invented on a question it couldn't source) | **0** |
+| Groundedness (1–5) | 5.00 |
+| Relevance (1–5) | 5.00 |
+| Answers containing unsupported claims | 0 |
+| Median latency | 19.1 s |
+| Total cost, all 22 questions | **$0.17** (~$0.008/question) |
+
+**The number that matters is `false answers: 0`** — across 4 out-of-scope
+questions and 3 that sound in-domain but aren't covered, it refused every time
+instead of producing something plausible.
+
+### Where I'd push back on my own numbers
+
+**Groundedness of 5.00 across all 15 is too clean to take at face value.** A
+judge that returns full marks for everything is indistinguishable from a broken
+one, which is exactly the failure this project hit once already (see bug 3).
+
+What I did check: the judge *discriminates*. Fed a deliberately fabricated claim
+("Python was created in 1823 by Ada Lovelace") against a passage that didn't
+support it, it returned groundedness **2/5** and named the invention. So it is
+not rubber-stamping.
+
+What that still doesn't prove: that the question set is *hard enough to
+separate good from mediocre*. A uniform top score means the benchmark has no
+resolution left — every question landed in material the corpus covers well. The
+honest reading is "no grounding failures detected on this set," not "grounding
+is solved." A harder set — ambiguous phrasing, questions spanning two documents,
+near-miss terminology — would be the next thing to build.
+
+**Latency is not good.** A 19-second median is fine for a documentation lookup
+and too slow for anything interactive. Most of it is the synthesis call with
+reasoning enabled; dropping it would cut latency and quality together.
+
+---
+
 ## Decisions worth explaining
 
 ### Retrieval is hybrid, and degrades instead of failing

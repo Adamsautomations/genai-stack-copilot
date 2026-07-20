@@ -1,0 +1,39 @@
+Running 22 questions through the RAG pipeline …
+
+  [ 1/22] ok    answerable     40.1s  g=5 r=5  How do I add persistence to a LangGraph graph?
+  [ 2/22] ok    answerable     15.4s  g=5 r=5  What is a checkpointer in LangGraph?
+  [ 3/22] ok    answerable     13.5s  g=5 r=5  How do I stream output from a LangGraph graph?
+  [ 4/22] ok    answerable     24.7s  g=5 r=5  What is the difference between a node and an edge in
+  [ 5/22] ok    answerable     19.7s  g=5 r=5  How do subgraphs work in LangGraph?
+  [ 6/22] ok    answerable     14.9s  g=5 r=5  How do I add memory to a LangGraph agent?
+  [ 7/22] ok    answerable     12.4s  g=5 r=5  What are conditional edges in LangGraph?
+  [ 8/22] ok    answerable     21.9s  g=5 r=5  How do I pause a LangGraph run for human input?
+  [ 9/22] ok    answerable     47.9s  g=5 r=5  What is LangSmith used for?
+  [10/22] ok    answerable     28.7s  g=5 r=5  How do I add tracing to a LangChain application?
+  [11/22] ok    answerable     33.0s  g=5 r=5  What is a tool in LangChain and how do I define one?
+  [12/22] ok    answerable     25.8s  g=5 r=5  What is a VectorStoreIndex in LlamaIndex?
+  [13/22] ok    answerable     40.1s  g=5 r=5  How does LlamaIndex split documents into nodes?
+  [14/22] ok    answerable     18.3s  g=5 r=5  What is a query engine in LlamaIndex?
+  [15/22] ok    answerable     18.4s  g=5 r=5  What is a node parser in LlamaIndex?
+  [16/22] ok    out_of_scope   25.9s  What is the capital of France?
+  [17/22] ok    out_of_scope    1.4s  How do I center a div with CSS flexbox?
+  [18/22] ok    out_of_scope    3.9s  Who won the football World Cup in 2022?
+  [19/22] ok    out_of_scope   41.8s  What is my current account balance?
+  [20/22] ok    not_in_corpus   1.6s  What is the exact per-token price of Claude Opus 4.8
+  [21/22] ok    not_in_corpus  11.1s  What is the default TCP keepalive timeout for LangGr
+  [22/22] ok    not_in_corpus  14.3s  Which LangGraph release removed the `graph.step_time
+
+--- summary ---
+  judge_failures: 0
+  judged_ok: 15
+  totals: {'questions': 22, 'answerable': 15, 'refusal_cases': 7}
+  answer_rate_on_answerable: 1.0
+  correct_refusal_rate: 1.0
+  false_answer_count: 0
+  groundedness_mean: 5
+  relevance_mean: 5
+  answers_with_unsupported_claims: 0
+  cost_usd_total: 0.1702
+  latency_s_median: 19.06
+
+Wrote C:\Projects\genai-stack-copilot\data\evals\rag_results.json

@@ -9,6 +9,10 @@ data/corpus/
 data/*.jsonl
 data/*.json
 data/*.txt
+# …except the packed CAG prefix. It is committed on purpose: the code treats it
+# as frozen bytes, and a prefix regenerated per-environment could drift and
+# silently break caching. ~550 KB.
+!data/cag_context.json
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
