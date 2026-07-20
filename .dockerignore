@@ -9,8 +9,16 @@ __pycache__/
 docs/
 README.md
 
-# The corpus and embeddings never belong in the image (120 MB).
-data/
-# …except the pre-packed CAG prefix, which is a few hundred KB and must be
-# byte-identical to whatever was measured, so it ships rather than rebuilds.
-!data/cag_context.json
+# Exclude the heavy generated artifacts individually rather than excluding
+# `data/` wholesale and re-including with `!`. Negating a path inside an
+# already-excluded directory is fragile, and the failure mode is silent: the
+# image builds fine and the CAG route 500s at runtime.
+data/corpus/
+data/evals/
+data/chunks.jsonl
+data/*.txt
+data/*.out
+data/*.err
+
+# data/cag_context.json is deliberately NOT excluded — it is the pre-packed
+# CAG prefix (~550 KB) the deployed app needs.
