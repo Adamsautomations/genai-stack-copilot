@@ -1,6 +1,4 @@
 .venv/
-data/
-docs/
 .git/
 .github/
 __pycache__/
@@ -8,4 +6,11 @@ __pycache__/
 .env
 .env.local
 .pytest_cache/
+docs/
 README.md
+
+# The corpus and embeddings never belong in the image (120 MB).
+data/
+# …except the pre-packed CAG prefix, which is a few hundred KB and must be
+# byte-identical to whatever was measured, so it ships rather than rebuilds.
+!data/cag_context.json

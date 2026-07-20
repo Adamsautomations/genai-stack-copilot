@@ -21,6 +21,10 @@ RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BA
 COPY src/ ./src/
 COPY web/ ./web/
 
+# Pre-packed CAG prefix. Optional — the RAG path works without it; the CAG
+# toggle degrades to a clear error rather than shipping a 120 MB corpus.
+COPY data/cag_context.jso[n] ./data/
+
 # Container Apps sets PORT; default matches local `uvicorn` usage.
 ENV PORT=8000
 EXPOSE 8000

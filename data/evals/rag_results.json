@@ -1,0 +1,403 @@
+{
+  "summary": {
+    "totals": {
+      "questions": 22,
+      "answerable": 15,
+      "refusal_cases": 7
+    },
+    "answer_rate_on_answerable": 1.0,
+    "correct_refusal_rate": 1.0,
+    "false_answer_count": 0,
+    "groundedness_mean": null,
+    "relevance_mean": null,
+    "answers_with_unsupported_claims": 0,
+    "cost_usd_total": 0.1796,
+    "latency_s_median": 17.05
+  },
+  "records": [
+    {
+      "question": "How do I add persistence to a LangGraph graph?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "To add persistence to a LangGraph graph, you compile the graph with a checkpointer (for short-term, thread-scoped state memory), a store (for long-term, cross-thread memory), or both [1][2][7][8]. You then invoke the graph with a `thread_id` in the configuration to persist and retrieve the state [1][2][6].\n\n### Python Implementation\n\nIn Python, you can use `InMemorySaver` and `InMemoryStore` for basic memory persistence [2]:\n\n```python\nfrom langgraph.checkpoint.memory import InMemorySaver\nfrom langgraph.store.memory import InMemoryStore\n\ncheckpointer = InMemorySaver()\nstore = InMemoryStore()\n\n# Compile your graph with the checkpointer, store, or both\ngraph = builder.compile(checkpointer=checkpointer, store=store)\n\n# Invoke the graph with a specific thread_id\nresult = graph.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"Hi, my name is Bob.\"}]},\n    {\"configurable\": {\"thread_id\": \"thread-1\"}},\n)\n```\n*(Note: Other checkpointer backends like SQLite, PostgreSQL, AWS, MongoDB, Azure Cosmos DB, Redis, Cockroach DB, and Aerospike are also supported [5].)*\n\n### TypeScript Implementation\n\nIn TypeScript, you can use `MemorySaver` and `MemoryStore` [1]:\n\n```typescript\nimport { MemorySaver, MemoryStore } from \"@langchain/langgraph\";\n\nconst checkpointer = new MemorySaver();\nconst store = new MemoryStore();\n\n// Compile your graph with the checkpointer, store, or both\nconst graph = builder.compile({ checkpointer, store });\n\n// Invoke the graph with a specific thread_id\nconst result = await graph.invoke(\n  { messages: [{ role: \"user\", content: \"Hi, my name is Bob.\" }] },\n  { configurable: { thread_id: \"thread-1\" } }\n);\n```\n\n### Persistence Types\n\nLangGraph provides two complementary persistence systems [7][8]:\n1. **Checkpointers**: Persist thread-level state. Useful for short-term conversation continuity, human-in-the-loop workflows, time travel, and fault tolerance [6][7][8].\n2. **Stores**: Persist application-defined data outside the graph state. Useful for long-term, cross-thread memory like user preferences or shared knowledge [7][8].\n\n### Automatic Persistence\nIf you deploy your implementation using the **Agent Server**, you do not need to configure checkpointers or stores manually; the server automatically handles the persistence infrastructure behind the scenes [1][2].",
+      "citations": 6,
+      "queries_tried": [
+        "How do I add persistence to a LangGraph graph?"
+      ],
+      "latency_s": 20.323,
+      "cost_usd": 0.006227,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is a checkpointer in LangGraph?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In LangGraph, a checkpointer is a persistence mechanism that saves a snapshot of the graph's state as a checkpoint at each step (or super-step), organized into threads [1][5]. \n\nConforming to the `BaseCheckpointSaver` interface [4], checkpointers act as a persistence layer to give agents short-term, thread-scoped memory, allowing them to save and resume state across interactions [5][6][7].\n\n### Key Features Enabled by Checkpointers:\n* **Human-in-the-loop workflows:** They allow humans to inspect, interrupt, and approve graph steps. Users can view the state at any point in time and resume execution after making updates [2][3].\n* **Memory:** They provide conversation continuity and memory between interactions on a thread [2][3][5].\n* **Time travel:** They allow users to replay prior graph executions for debugging and to fork the state at arbitrary checkpoints to explore alternative trajectories [2][3].\n* **Fault-tolerance and error recovery:** If a node fails mid-execution, the graph can be restarted from the last successful step [2][3]. It also saves \"pending writes\" from other nodes that completed successfully during a failed step so they do not have to be re-run [2][3].\n\n### Implementations and Backends:\nCheckpointers are implemented via standalone, installable libraries depending on the storage backend, including [4][7]:\n* **In-memory** (`MemorySaver`) [4][7]\n* **SQLite** (`SqliteSaver`) [4][7]\n* **PostgreSQL** (`PostgresSaver`) [4][7]\n* **MongoDB** (`MongoDBSaver`) [4][7]\n* **Redis** (`RedisSaver`) [4][7]\n* **Other backends:** AWS (DynamoDB, Bedrock, Valkey), Azure Cosmos DB, Cockroach DB, and Aerospike [7].",
+      "citations": 7,
+      "queries_tried": [
+        "What is a checkpointer in LangGraph?"
+      ],
+      "latency_s": 14.094,
+      "cost_usd": 0.006825,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "How do I stream output from a LangGraph graph?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "To stream output from a LangGraph graph, you can use several approach options depending on whether you are interacting directly with the compiled graph in code, using the LangGraph SDK, employing the Functional API, or building a frontend.\n\n### 1. Basic Graph `.stream()` Method (JavaScript/TypeScript)\nLangGraph graphs expose a `.stream()` method that yields streamed outputs as iterators [1]. \n\n```typescript\nfor await (const chunk of await graph.stream(inputs, {\n  streamMode: \"updates\",\n})) {\n  console.log(chunk);\n}\n```\n\n### 2. Streaming via the LangGraph SDK (Python, JavaScript, & cURL)\nIf you are running a deployed graph on an Agent Server, you can stream outputs using the SDK's `client.runs.stream` helper [3][6].\n\n**Python:**\n```python\nasync for chunk in client.runs.stream(\n    thread_id,\n    assistant_id,\n    input={\"foo\": \"foo\"},\n    stream_subgraphs=True, \n    stream_mode=\"updates\",\n):\n    print(chunk)\n```\n\n**JavaScript:**\n```javascript\nconst streamResponse = client.runs.stream(\n  threadID,\n  assistantID,\n  {\n    input: { foo: \"foo\" },\n    streamSubgraphs: true,\n    streamMode: \"updates\"\n  }\n);\nfor await (const chunk of streamResponse) {\n  console.log(chunk);\n}\n```\n\n**cURL:**\n```bash\ncurl --request POST \\\n--url <DEPLOYMENT_URL>/threads/<THREAD_ID>/runs/stream \\\n--header 'Content-Type: application/json' \\\n--data \"{\n  \\\"assistant_id\\\": \\\"agent\\\",\n  \\\"input\\\": {\\\"foo\\\": \\\"foo\\\"},\n  \\\"stream_subgraphs\\\": true,\n  \\\"stream_mode\\\": [\n    \\\"updates\\\"\n  ]\n}\"\n```\n\n### 3. Streaming Subgraph Outputs\nTo include outputs from subgraphs in your stream, configure the subgraph streaming parameter [2][3][6]:\n* In the **JavaScript/TypeScript `.stream()`** method, set `subgraphs: true` [2]:\n  ```typescript\n  for await (const chunk of await graph.stream(\n    { foo: \"foo\" },\n    {\n      subgraphs: true,\n      streamMode: \"updates\",\n    }\n  )) {\n    console.log(chunk);\n  }\n  ```\n* In the **LangGraph SDK**, use `stream_subgraphs=True` (Python) or `streamSubgraphs: true` (JavaScript) [3][6].\n\n### 4. Streaming Custom User-Defined Data\nYou can emit custom data from inside a graph node or tool using a `writer` and setting `streamMode: \"custom\"` [7]:\n\n```typescript\nimport { StateGraph, StateSchema, GraphNode, START } from \"@langchain/langgraph\";\nimport * as z from \"zod\";\n\nconst State = new StateSchema({\n  query: z.string(),\n  answer: z.string(),\n});\n\nconst node: GraphNode<typeof State> = async (state, config) => {\n  // Use the writer to emit custom data\n  config.writer({ custom_key: \"Generating custom data inside node\" });\n  return { answer: \"some data\" };\n};\n\nconst graph = new StateGraph(State)\n  .addNode(\"node\", node)\n  .addEdge(START, \"node\")\n  .compile();\n\n// streamMode: \"custom\" retrieves this custom data in the stream\nfor await (const chunk of await graph.stream({ query: \"example\" }, { streamMode: \"custom\" })) {\n  console.log(chunk);\n}\n```\n\n### 5. Functional API `stream_events()` (Python)\nWhen using the LangGraph functional API, you can utilize the `stream_events()` method to process streamed output [5]:\n\n```python\nstream = graph.stream_events(\"foo\", config, version=\"v3\")\nfor message in stream.messages:\n    for token in message.text:\n        print(token, end=\"\", flush=True)\n```\n\n### 6. Frontend Integration\nOn the frontend, the LangGraph SDK provides reactive hooks to handle streaming content [4][8]:\n* **React**: Use the [`useStream`](https://reference.langchain.com/javascript/langchain-react/index/useStream) hook [4][8].\n* **Angular**: Use the [`injectStream`](https://reference.langchain.com/javascript/langchain-angular/injectStream) function [4][8].\n\n```typescript\nimport { useStream } from \"@langchain/react\";\n\nfunction Pipeline() {\n  const stream = useStream<typeof graph>({\n    apiUrl: \"http://localhost:2024\",\n    assistantId: \"pipeline\",\n  });\n\n  const classification = stream.values?.classification;\n  const research = stream.values?.research;\n  const analysis = stream.values?.analysis;\n  const graphNodes = [...stream.subgraphs.values()];\n}\n```",
+      "citations": 8,
+      "queries_tried": [
+        "How do I stream output from a LangGraph graph?"
+      ],
+      "latency_s": 25.922,
+      "cost_usd": 0.016364,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is the difference between a node and an edge in LangGraph?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In short: **nodes do the work, edges tell what to do next** [1]. \n\nHere are the specific differences between the two components in LangGraph:\n\n### Nodes\n* **What they are:** Nodes are functions that encode the logic of your agents [1]. They can contain an LLM or regular code [1].\n* **What they do:** They receive the current graph state as input, perform a computation or side-effect (executing steps like classifying, researching, analyzing, or synthesizing), and write their output to a specific state key to return an updated state [1][3].\n\n### Edges\n* **What they are:** Edges are functions that determine which node to execute next based on the current state [1].\n* **What they do:** They define how the logic is routed, how the graph decides to stop, and how different nodes communicate with each other [2]. \n* **Types of Edges:** Edges can be fixed transitions or conditional branches [1]. Key types of edges include [2]:\n  * *Normal Edges:* Go directly from one node to the next [2].\n  * *Conditional Edges:* Call a function to determine which node(s) to go to next [2].\n  * *Entry Point:* Defines which node to call first when user input arrives [2].\n  * *Conditional Entry Point:* Calls a function to determine which node(s) to call first when user input arrives [2].\n\n---\n\n### Code Example\nThe following python configuration demonstrates how both nodes (the functions performing the steps) and edges (the routing pathways) are defined and added to a graph [3]:\n\n```python\nfrom langgraph.graph import StateGraph, MessagesState, START, END\n\n# Define graph state\nclass State(MessagesState):\n    classification: str\n    research: str\n\ngraph = StateGraph(State)\n\n# Define Nodes (\"doing the work\")\ngraph.add_node(\"classify\", classify_node)\ngraph.add_node(\"do_research\", research_node)\n\n# Define Edges (\"telling what to do next\")\ngraph.add_edge(START, \"classify\")\ngraph.add_edge(\"classify\", \"do_research\")\ngraph.add_edge(\"do_research\", END)\n\napp = graph.compile()\n```",
+      "citations": 3,
+      "queries_tried": [
+        "What is the difference between a node and an edge in LangGraph?"
+      ],
+      "latency_s": 17.631,
+      "cost_usd": 0.007745,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "How do subgraphs work in LangGraph?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In LangGraph, a **subgraph** is a graph that is used as a node within another parent graph [1][2]. They are primarily used for building multi-agent systems, reusing sets of nodes across multiple graphs, and distributing development among different teams [1][2].\n\nHere is how subgraphs work and how to configure them based on the documentation:\n\n---\n\n### 1. Defining Subgraph Communication (State Schemas)\nDepending on whether the parent graph and the subgraph share state keys, you can integrate a subgraph in one of two ways [3]:\n\n#### Option A: Shared State Schemas (Direct Node)\nIf the parent graph and subgraph **share state keys**, you can add the compiled subgraph directly as a node. The subgraph automatically reads from and writes to the parent's state channels [3].\n\n```python\n# Parent and subgraph share the same 'State' schema\nbuilder = StateGraph(State)\nbuilder.add_node(\"node_1\", subgraph)  # Pass the compiled subgraph directly\nbuilder.add_edge(START, \"node_1\")\ngraph = builder.compile()\n```\n\n#### Option B: Different State Schemas (Call Inside a Node)\nIf the schemas are **different (no shared keys)**, you must call the subgraph inside a parent node function. This function acts as a transformer: it maps the parent state to the subgraph input schema, invokes the subgraph, and maps the result back to the parent state [3][4].\n\n```python\n# Parent state uses 'State' with 'foo', subgraph uses 'SubgraphState' with 'bar'\ndef call_subgraph(state: State):\n    # 1. Transform parent state to subgraph state\n    subgraph_output = subgraph.invoke({\"bar\": state[\"foo\"]})\n    # 2. Transform response back to parent state\n    return {\"foo\": subgraph_output[\"bar\"]}\n\nbuilder = StateGraph(State)\nbuilder.add_node(\"node_1\", call_subgraph)\nbuilder.add_edge(START, \"node_1\")\ngraph = builder.compile()\n```\n\n---\n\n### 2. Subgraph Persistence (Memory and Checkpointing)\nYou can control how a subgraph retains its internal data between calls using the `checkpointer` parameter when calling `.compile()` on the subgraph [3]:\n\n| Mode | `checkpointer` Value | Behavior |\n| :--- | :--- | :--- |\n| **Per-invocation (Default)** | `None` (or omitted) | The subgraph starts fresh on each call but inherits the parent's checkpointer to support interrupts and durable execution within that single call [3]. |\n| **Per-thread** | `True` | State accumulates across calls on the same thread (e.g., multi-turn memory). *Note: Does not support parallel tool calls, and multiple persistent subgraphs must use unique node names for namespace isolation [3].* |\n| **Stateless** | `False` | No checkpointing. Runs like a plain function call; does not support interrupts or state inspection [3]. |\n\n---\n\n### 3. Navigating to a Parent Graph Node\nYou can route from a node inside a subgraph to a different node/subgraph in the parent graph by returning a `Command` object with `graph=Command.PARENT` [1].\n\n```python\n# Within a subgraph node\ndef node_a(state: State):\n    return Command(\n        update={\"foo\": \"value\"},\n        goto=\"node_b\",  # 'node_b' is a node in the parent graph\n        graph=Command.PARENT,  # Tells LangGraph to navigate to the parent graph\n    )\n```\n*Note: If you send updates to a parent graph via `Command.PARENT` for a shared key, you must define a reducer (e.g., `operator.add`) on the parent state key [1].*\n\n---\n\n### 4. Viewing Subgraph State\nWhen persistence is enabled, you can inspect a subgraph's state by passing `subgraphs=True` to `get_state()` [3][5]. This requires the subgraph to be statically discovered (either added as a node or called inside a node function) [3][5].\n\n```python\n# Retrieve state for the current thread/invocation\nsubgraph_state = graph.get_state(config, subgraphs=True).tasks[0].state\n```\n\n---\n\n### 5. Streaming Subgraph Outputs\nTo capture outputs from both the parent graph and any nested subgraphs, set `subgraphs=True` (or `stream_subgraphs=True` in the SDK client runs) when streaming [3][7][8].\n\n```python\n# Event streaming with Python\nstream = graph.stream_events({\"foo\": \"foo\"}, version=\"v3\")\nfor event in stream:\n    if event[\"method\"] == \"updates\":\n        # event[\"params\"][\"namespace\"] contains the subgraph's path\n        print(event[\"params\"][\"namespace\"], event[\"params\"][\"data\"])\n```",
+      "citations": 7,
+      "queries_tried": [
+        "How do subgraphs work in LangGraph?"
+      ],
+      "latency_s": 22.091,
+      "cost_usd": 0.029405,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "How do I add memory to a LangGraph agent?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In LangGraph, you can add two types of memory to an agent [3][4]:\n\n1. **Short-term memory** (thread-level persistence) to enable multi-turn conversations [2][5].\n2. **Long-term memory** to store user-specific or application-level data across sessions [1][3][4].\n\n---\n\n### 1. Adding Short-term Memory\n\nShort-term memory is managed using a **checkpointer** (such as `InMemorySaver` or `MemorySaver`) [2][5][8]. \n\n#### For StateGraph (Python):\nCompile the graph with a checkpointer and pass a `thread_id` in the configuration when invoking it [5]:\n\n```python\nfrom langgraph.checkpoint.memory import InMemorySaver\nfrom langgraph.graph import StateGraph\n\n# Instantiate the checkpointer\ncheckpointer = InMemorySaver()\n\nbuilder = StateGraph(...)\n# Compile the graph with the checkpointer\ngraph = builder.compile(checkpointer=checkpointer)\n\n# Invoke with a specific thread ID\ngraph.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"hi! i am Bob\"}]},\n    {\"configurable\": {\"thread_id\": \"1\"}},\n)\n```\n\n#### For StateGraph (TypeScript):\n```typescript\nimport { MemorySaver, StateGraph } from \"@langchain/langgraph\";\n\nconst checkpointer = new MemorySaver();\n\nconst builder = new StateGraph(...);\nconst graph = builder.compile({ checkpointer });\n\nawait graph.invoke(\n  { messages: [{ role: \"user\", content: \"hi! i am Bob\" }] },\n  { configurable: { thread_id: \"1\" } }\n);\n``` [2]\n\n#### Using `create_agent` (Python helper):\nYou can pass the checkpointer directly to the `create_agent` function [8]:\n\n```python\nfrom langchain.agents import create_agent\nfrom langgraph.checkpoint.memory import InMemorySaver\n\nagent = create_agent(\n    model=\"openai:gpt-5.5\",\n    tools=[get_user_info],\n    checkpointer=InMemorySaver(),\n)\n\n# Then call with thread configuration\nthread_config = {\"configurable\": {\"thread_id\": \"1\"}}\nresponse = agent.invoke(\n    {\"messages\": [{\"role\": \"user\", \"content\": \"Hi! My name is Bob.\"}]},\n    thread_config,\n)\n```\n\n---\n\n### 2. Adding Long-term Memory\n\nTo add long-term memory, you create a store and pass it to `create_agent` using the `store` parameter [1]. \n\n#### Using `InMemoryStore`:\n```python\nfrom langchain.agents import create_agent\nfrom langchain_core.runnables import Runnable\nfrom langgraph.store.memory import InMemoryStore\n\n# Saves data to an in-memory dictionary\nstore = InMemoryStore()\n\nagent: Runnable = create_agent(\n    \"claude-sonnet-4-6\",\n    tools=[],\n    store=store,\n)\n``` [1]\n\n#### Using `PostgresStore` (production database-backed store):\nInstall the package first [1]:\n```shell\npip install langgraph-checkpoint-postgres\n```\n\nThen configure and pass the Postgres store [1]:\n```python\nfrom langchain.agents import create_agent\nfrom langchain_core.runnables import Runnable\nfrom langgraph.store.postgres import PostgresStore\n\nDB_URI = \"postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable\"\n\nwith PostgresStore.from_conn_string(DB_URI) as store:\n    store.setup()\n    agent: Runnable = create_agent(\n        \"claude-sonnet-4-6\",\n        tools=[],\n        store=store,\n    )\n```",
+      "citations": 6,
+      "queries_tried": [
+        "How do I add memory to a LangGraph agent?"
+      ],
+      "latency_s": 14.121,
+      "cost_usd": 0.013157,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What are conditional edges in LangGraph?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In LangGraph, **conditional edges** are used to dynamically route execution by calling a routing function to determine which node (or nodes) to go to next, or to optionally terminate the graph [1][2]. \n\n### Key Characteristics of Conditional Edges\n* **Dynamic Routing:** Unlike normal edges that statically go from one node to the next, conditional edges evaluate the graph's current state to decide the next path at runtime [1][2][5].\n* **No State Updates:** They are used strictly for routing, not for updating state [4][8]. If you need to both update the state and route in a single function, you should use `Command` instead [2][8].\n* **Parallel Execution (Fan-out):** If the routing function returns multiple destination nodes, all of those nodes will execute in parallel in the next superstep [2].\n* **Best Practices:** You should not mix normal (static) edges and conditional (dynamic) edges from the same node, as both paths can execute and make graph behavior difficult to reason about [1].\n\n---\n\n### Code Examples\n\n#### 1. Basic Conditional Edge (TypeScript)\nYou can define a conditional edge using the `addConditionalEdges` method on your graph. The routing function accepts the current graph `state` and returns the target node(s) [2]:\n\n```typescript\ngraph.addConditionalEdges(\"nodeA\", routingFunction);\n```\n\n#### 2. Conditional Edge with a Mapping Object (TypeScript)\nYou can optionally map the outputs of the routing function to specific destination nodes [2]:\n\n```typescript\ngraph.addConditionalEdges(\"nodeA\", routingFunction, {\n  true: \"nodeB\",\n  false: \"nodeC\",\n});\n```\n\n#### 3. Defining the Routing Function (TypeScript)\nThe `ConditionalEdgeRouter` utility can be used to type the routing function [4]:\n\n```typescript\nimport { ConditionalEdgeRouter, END } from \"@langchain/langgraph\";\n\nconst router: ConditionalEdgeRouter<typeof State, \"process\" | \"summarize\"> = (state) => {\n  if (!state.shouldContinue) {\n    return END;\n  }\n  return state.step === \"initial\" ? \"process\" : \"summarize\";\n};\n\n// Use in graph\ngraph.addConditionalEdges(\"check\", router);\n```\n\n#### 4. Python Implementation\nIn Python, conditional edges are registered using `add_conditional_edges` [7]:\n\n```python\nworkflow.add_conditional_edges(\n    \"agent\",\n    should_continue,\n    {\n        \"continue\": \"action\",\n        \"end\": END,\n    },\n)\n```",
+      "citations": 6,
+      "queries_tried": [
+        "What are conditional edges in LangGraph?"
+      ],
+      "latency_s": 15.372,
+      "cost_usd": 0.007924,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "How do I pause a LangGraph run for human input?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "To pause a LangGraph run for human input, use the **`interrupt()`** function inside a node or task [1][4][5]. Calling `interrupt()` suspends execution, saves the graph's state, and waits indefinitely for a response [4][5]. \n\n### Prerequisites\nTo use `interrupt()`, you must provide [4][5]:\n1. A **checkpointer** to persist the graph state.\n2. A **thread ID** in your configuration so LangGraph knows which state to resume.\n3. A **JSON-serializable** payload passed as the argument to `interrupt()`.\n\n---\n\n### Python Implementation\n\n#### 1. Pausing the Graph\nImport `interrupt` from `langgraph.types` and call it within your node [5]:\n\n```python\nfrom langgraph.types import interrupt\n\ndef approval_node(state: State):\n    # Pause execution and request input\n    approved = interrupt(\"Do you approve this action?\")\n\n    # The value provided when resuming is returned here\n    return {\"approved\": approved}\n``` [5]\n\n#### 2. Resuming the Graph\nTo resume, stream or invoke the graph using the same `thread_id` and pass a `Command(resume=...)` object containing the user's input [2][3][7]:\n\n```python\nfrom langgraph.types import Command\n\n# Provide a persistent thread ID\nconfig = {\"configurable\": {\"thread_id\": \"thread-1\"}}\n\n# Resume execution with the human's response\nresumed = graph.stream_events(Command(resume=True), config=config, version=\"v3\")\nfinal = resumed.output\n``` [3][7]\n\n---\n\n### JavaScript / TypeScript Implementation\n\n#### 1. Pausing the Graph\nImport `interrupt` from `@langchain/langgraph` and call it within your node or task [1][4]:\n\n```typescript\nimport { interrupt } from \"@langchain/langgraph\";\n\nasync function approvalNode(state: State) {\n    // Pause and ask for approval\n    const approved = interrupt(\"Do you approve this action?\");\n\n    return { approved };\n}\n``` [4]\n\n#### 2. Resuming the Graph\nTo resume, call the graph with a `Command` containing the `resume` payload [1]:\n\n```typescript\nimport { Command } from \"@langchain/langgraph\";\n\nconst config = { configurable: { thread_id: \"1\" } };\n\n// Resume execution with the user's input\nconst stream = await graph.streamEvents(\n  new Command({ resume: \"baz\" }),\n  config,\n  { version: \"v3\" }\n);\n``` [1]\n\n---\n\n### Key Rules and Best Practices\n\n* **The node restarts from the beginning:** When a run is resumed, execution does not start at the exact line of the `interrupt()` call; instead, it restarts the entire node from the beginning [2][3][7]. Any side effects defined inside the node before the `interrupt()` call must be idempotent [2][3][7].\n* **Do not wrap `interrupt()` in a bare try/except block:** LangGraph pauses execution by throwing a special exception. If you catch all exceptions, the runtime will not receive the pause signal [2][3][7]:\n  ```python\n  # \u274c BAD - This will catch the interrupt exception and fail to pause\n  try:\n      interrupt(\"What's your name?\")\n  except Exception as e:\n      print(e)\n  ``` [2][3][7]\n* **Do not loop or reorder `interrupt` calls dynamically:** Resuming matches inputs to interrupts strictly by index order. Do not skip interrupts conditionally or run them inside non-deterministic loops (like `while True`) within a single node [2][3][7]. Use conditional edges to loop instead [2][3][7].",
+      "citations": 6,
+      "queries_tried": [
+        "How do I pause a LangGraph run for human input?"
+      ],
+      "latency_s": 38.197,
+      "cost_usd": 0.032669,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is LangSmith used for?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "LangSmith is a service used to deploy, scale, debug, monitor, evaluate, and instrument LLM and agentic applications [4][5][6]. \n\nSpecifically, it is used for:\n\n* **Observability and Tracing:** It provides full visibility into LLM applications by capturing structured traces of inputs, outputs, and metadata, allowing developers to investigate individual traces, filter, export, share, and compare them [5][6].\n* **Application Deployment and Scaling:** It serves as a scalable infrastructure for deploying and scaling agentic applications (such as LangGraph applications) and offers an opinionated API for building agent UXs [4].\n* **Performance Monitoring:** Users can build dashboards and set alerts to track application quality, monitor production-wide performance metrics, and catch issues early [6].\n* **Finding and Fixing Failures:** Through the LangSmith Engine, it automatically detects recurring issues in traces, diagnoses their root causes, and helps resolve them [6].\n* **Feedback and Annotation:** It allows users to collect user feedback, annotate outputs, and manually add notes or feedback tags to any intermediate run or trace inline or via annotation queues [6][7].\n* **Automations:** Users can configure automated workflows using rules, webhooks, and online evaluations [6].\n* **Testing and Playground Integration:** It features a Playground for forwarding requests to various LLM providers [2][3] and provides an integrated developer UI [4].\n* **Data and Project Management (CLI):** Users can use the LangSmith CLI to query and manage projects, traces, runs, datasets, evaluators, experiments, and threads directly from the terminal for bulk exports, automation, or coding agent access [1].",
+      "citations": 7,
+      "queries_tried": [
+        "What is LangSmith used for?"
+      ],
+      "latency_s": 17.934,
+      "cost_usd": 0.007539,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "How do I add tracing to a LangChain application?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "To add tracing to a LangChain application, you can use the built-in integrations for Python or TypeScript. \n\n### Method 1: Using OpenTelemetry (Python)\n\nIf you are using Python, you can trace your LangChain application by installing the OpenTelemetry-supported LangSmith package and setting environment variables [5].\n\n1. **Install the required packages** [5]:\n   ```bash\n   pip install \"langsmith[otel]\"\n   pip install langchain\n   ```\n   *(Note: This requires Python SDK version `langsmith>=0.3.18`, but `langsmith>=0.4.25` is recommended) [5].*\n\n2. **Set the environment variables** to enable the OpenTelemetry integration and configure your LangSmith connection [5]:\n   ```bash\n   LANGSMITH_OTEL_ENABLED=true\n   LANGSMITH_TRACING=true\n   LANGSMITH_ENDPOINT=https://api.smith.langchain.com\n   LANGSMITH_API_KEY=<your_langsmith_api_key>\n   # For LangSmith API keys linked to multiple workspaces, set:\n   # LANGSMITH_WORKSPACE_ID=<your_workspace_id>\n   ```\n\n3. **Run your LangChain application** [5]. The tracing will occur automatically:\n   ```python\n   import os\n   from langchain_openai import ChatOpenAI\n   from langchain_core.prompts import ChatPromptTemplate\n\n   # Create a chain\n   prompt = ChatPromptTemplate.from_template(\"Tell me a joke about {topic}\")\n   model = ChatOpenAI()\n   chain = prompt | model\n\n   # Run the chain\n   result = chain.invoke({\"topic\": \"programming\"})\n   print(result.content)\n   ```\n\n---\n\n### Method 2: Tracing Selectively (TypeScript)\n\nIf you are using TypeScript, you can selectively trace specific invocations or parts of your application by passing a `LangChainTracer` instance in the invocation callbacks [1]:\n\n```ts\nimport { LangChainTracer } from \"@langchain/core/tracers/tracer_langchain\";\n\n// This invocation WILL be traced\nconst tracer = new LangChainTracer();\nawait agent.invoke(\n  {\n    messages: [{role: \"user\", content: \"Send a test email to alice@example.com\"}]\n  },\n  { callbacks: [tracer] }\n);\n\n// This invocation will NOT be traced (unless LANGSMITH_TRACING environment variable is set)\nawait agent.invoke(\n  {\n    messages: [{role: \"user\", content: \"Send another email\"}]\n  }\n);\n```\n\n#### Adding Tags and Metadata to TypeScript Traces\nYou can also configure the tracer to target a specific project and pass custom `tags` and `metadata` into your invocation configuration [2][8]:\n\n```ts\nimport { LangChainTracer } from \"@langchain/core/tracers/tracer_langchain\";\n\nconst tracer = new LangChainTracer({ projectName: \"email-agent-test\" });\nawait agent.invoke(\n  {\n    messages: [{role: \"user\", content: \"Send a test email to alice@example.com\"}]\n  },\n  {\n    tags: [\"production\", \"email-assistant\", \"v1.0\"],\n    metadata: {\n      userId: \"user123\",\n      sessionId: \"session456\",\n      environment: \"production\"\n    }\n  },\n);\n```",
+      "citations": 4,
+      "queries_tried": [
+        "How do I add tracing to a LangChain application?"
+      ],
+      "latency_s": 22.999,
+      "cost_usd": 0.007859,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is a tool in LangChain and how do I define one?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "### What is a Tool in LangChain?\n\nIn LangChain, **tools** are utilities designed to be called by a model [3][5]. Their inputs are designed to be generated by models, and their outputs are passed back to models [3][5]. \n\nUnder the hood, tools are callable functions with well-defined inputs and outputs [8]. They extend what agents can do, allowing them to fetch real-time data, execute code, query external databases, and take actions [8]. A chat model decides when to invoke a tool and which arguments to provide based on the conversation context [8].\n\nEach tool requires a clear name, description, argument names, and argument descriptions, which guide the model's reasoning about when and how to use it [4]. It is recommended to use `snake_case` for tool names to improve compatibility across different model providers [1].\n\n---\n\n### How to Define a Tool\n\n#### 1. In JavaScript/TypeScript\n\nThe simplest way to create a tool in JavaScript or TypeScript is by importing the `tool` function (either from `langchain` or `@langchain/core/tools`) and using [zod](https://zod.dev/) to define its input schema [1][4].\n\n**Example 1 (Basic implementation):** [1]\n```ts\nimport * as z from \"zod\"\nimport { tool } from \"langchain\"\n\nconst searchDatabase = tool(\n  ({ query, limit }) => `Found ${limit} results for '${query}'`,\n  {\n    name: \"search_database\",\n    description: \"Search the customer database for records matching the query.\",\n    schema: z.object({\n      query: z.string().describe(\"Search terms to look for\"),\n      limit: z.number().describe(\"Maximum number of results to return\"),\n    }),\n  }\n);\n```\n\n**Example 2 (With detailed descriptions):** [4]\n```typescript\nimport { tool } from \"@langchain/core/tools\";\nimport { z } from \"zod\";\n\nconst searchOrders = tool(\n  async ({ userId, status, limit }) => {\n    // Implementation here\n  },\n  {\n    name: \"search_orders\",\n    description: `Search for user orders by status.\n\n    Use this when the user asks about order history or wants to check\n    order status. Always filter by the provided status.`,\n    schema: z.object({\n      userId: z.string().describe(\"Unique identifier for the user\"),\n      status: z.enum([\"pending\", \"shipped\", \"delivered\"]).describe(\"Order status to filter by\"),\n      limit: z.number().default(10).describe(\"Maximum number of results to return\"),\n    }),\n  }\n);\n```\n\n---\n\n#### 2. In Python\n\nIn Python, you can define tools using functions. You can also outline the input schema using `TypedDict` and `Annotated` [2].\n\n**Example 1 (Basic Python function):** [2]\n```python\n# Define code tool\ndef code_tool(code: str) -> str:\n  \"\"\"Execute python code and return the result.\"\"\"\n  sbx = Sandbox()\n  execution = sbx.run_code(code)\n\n  if execution.error:\n      return f\"Error: {execution.error}\"\n  return f\"Results: {execution.results}, Logs: {execution.logs}\"\n```\n\n**Example 2 (Using typed input schemas):** [2]\n```python\nfrom typing_extensions import Annotated, TypedDict, Literal\n\n# Define input schema for stock ticker tool\nclass TickerToolInput(TypedDict):\n  \"\"\"Input format for the ticker tool.\n    The tool will pull data in aggregate blocks (timespan_multiplier * timespan) from the from_date to the to_date\n  \"\"\"\n  ticker: Annotated[str, ..., \"The ticker symbol of the stock\"]\n  timespan: Annotated[Literal[\"minute\", \"hour\", \"day\", \"week\", \"month\", \"quarter\", \"year\"], ..., \"The size of the time window.\"]\n  timespan_multiplier: Annotated[int, ..., \"The multiplier for the time window\"]\n  from_date: Annotated[str, ..., \"The date to start pulling data from, YYYY-MM-DD format - ONLY include the year month and day\"]\n  to_date: Annotated[str, ..., \"The date to stop pulling data, YYYY-MM-DD format - ONLY include the year month and day\"]\n\n# Define stock ticker tool\ndef ticker_tool(query: TickerToolInput) -> str:\n  \"\"\"Pull data for the ticker.\"\"\"\n  return polygon_aggregate.invoke(query)\n```",
+      "citations": 6,
+      "queries_tried": [
+        "What is a tool in LangChain and how do I define one?"
+      ],
+      "latency_s": 14.97,
+      "cost_usd": 0.007526,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is a VectorStoreIndex in LlamaIndex?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "Based on the provided documentation, a **VectorStoreIndex** in LlamaIndex is an index that stores documents and can be used to answer queries [3]. It accepts a list of `Node` objects (or parses loaded documents into `Node` objects) and builds an index from them [1][2]. \n\n### Key Characteristics and Functionality\n* **In-Memory by Default:** By default, `VectorStoreIndex` stores everything in memory [2]. However, it can also be configured to use persistent vector stores (such as Pinecone) by passing a custom `StorageContext` with a specified `vector_store` [2][5].\n* **Batch Processing:** By default, it generates and inserts vectors in batches of 2048 nodes, though this can be configured using the `insert_batch_size` parameter [2].\n* **Composable Retrieval:** It is capable of retrieving generic objects (including references to nodes, query engines, retrievers, and query pipelines). If these objects are retrieved, they automatically run using the provided query [6].\n\n---\n\n### How to Use VectorStoreIndex\n\n#### 1. Building from Documents\nThe simplest way to use a `VectorStoreIndex` is to load documents using `SimpleDirectoryReader` and construct the index using `from_documents` [2]:\n\n```python\nfrom llama_index.core import VectorStoreIndex, SimpleDirectoryReader\n\n# Load documents and build index\ndocuments = SimpleDirectoryReader(\n    \"../../examples/data/paul_graham\"\n).load_data()\nindex = VectorStoreIndex.from_documents(documents)\n```\n*(Note: You can optionally pass `show_progress=True` to `from_documents` to display a progress bar during construction [2][4].)*\n\n#### 2. Building Directly from Nodes\nYou can also choose to build an index over a list of `Node` objects directly [4]:\n\n```python\nfrom llama_index.core import VectorStoreIndex\n\nindex = VectorStoreIndex(nodes)\n```\n\n#### 3. Building with a Persistent Vector Store\nTo use a persistent vector store, you pass a customized `StorageContext` to `from_documents` [5]:\n\n```python\nimport pinecone\nfrom llama_index.core import (\n    VectorStoreIndex,\n    SimpleDirectoryReader,\n    StorageContext,\n)\nfrom llama_index.vector_stores.pinecone import PineconeVectorStore\n\n# init pinecone\npinecone.init(api_key=\"<api_key>\", environment=\"<environment>\")\npinecone.create_index(\n    \"quickstart\", dimension=1536, metric=\"euclidean\", pod_type=\"p1\"\n)\n\n# construct vector store and customize storage context\nstorage_context = StorageContext.from_defaults(\n    vector_store=PineconeVectorStore(pinecone.Index(\"quickstart\"))\n)\n\n# Load documents and build index\ndocuments = SimpleDirectoryReader(\n    \"../../examples/data/paul_graham\"\n).load_data()\nindex = VectorStoreIndex.from_documents(\n    documents, storage_context=storage_context\n)\n```",
+      "citations": 6,
+      "queries_tried": [
+        "What is a VectorStoreIndex in LlamaIndex?"
+      ],
+      "latency_s": 15.931,
+      "cost_usd": 0.005117,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "How does LlamaIndex split documents into nodes?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "LlamaIndex splits documents into smaller \"chunks\" called Nodes using a variety of text splitters and node parsers [1][2]. \n\nThis splitting can be accomplished through several APIs and approaches:\n\n### 1. Using a Node Parser Directly\nYou can parse documents into nodes by calling the `.get_nodes_from_documents()` method on a splitter/parser instance [4][5]. \n\nLlamaIndex supports a wide range of splitters, including sentence, token, and file-based splitters like HTML or JSON [2]. For example:\n\n* **SentenceSplitter** (splits text while respecting sentence boundaries) [6]:\n```python\nfrom llama_index.core.node_parser import SentenceSplitter\n\nsplitter = SentenceSplitter(\n    chunk_size=1024,\n    chunk_overlap=20,\n)\nnodes = splitter.get_nodes_from_documents(documents)\n```\n\n* **TokenTextSplitter** (splits text to a consistent chunk size according to raw token counts) [7]:\n```python\nfrom llama_index.core.node_parser import TokenTextSplitter\n\nsplitter = TokenTextSplitter(\n    chunk_size=1024,\n    chunk_overlap=20,\n    separator=\" \",\n)\nnodes = splitter.get_nodes_from_documents(documents)\n```\n\n### 2. Using an Ingestion Pipeline\nYou can incorporate splitters as transformations inside an `IngestionPipeline` [2]:\n\n```python\nfrom llama_index.core import SimpleDirectoryReader\nfrom llama_index.core.ingestion import IngestionPipeline\nfrom llama_index.core.node_parser import TokenTextSplitter\n\ndocuments = SimpleDirectoryReader(\"./data\").load_data()\n\npipeline = IngestionPipeline(transformations=[TokenTextSplitter(), ...])\n\nnodes = pipeline.run(documents=documents)\n```\n\n### 3. Automatically via High-Level APIs\nWhen using index methods like `.from_documents()`, LlamaIndex will automatically split and chunk your documents into Node objects under the hood [3]:\n\n```python\nfrom llama_index.core import VectorStoreIndex\n\nvector_index = VectorStoreIndex.from_documents(documents)\n```\n\nYou can customize the text splitter for these high-level APIs globally or per-index [3]:\n\n* **Globally via Settings** [1][3]:\n```python\nfrom llama_index.core import Settings\nfrom llama_index.core.node_parser import SentenceSplitter\n\n# Customize splitter\nSettings.text_splitter = SentenceSplitter(chunk_size=1024)\n\n# Or change only defaults\nSettings.chunk_size = 512\nSettings.chunk_overlap = 20\n```\n\n* **Per-Index via Transformations** [3]:\n```python\nfrom llama_index.core.node_parser import SentenceSplitter\nfrom llama_index.core import VectorStoreIndex\n\ntext_splitter = SentenceSplitter(chunk_size=512, chunk_overlap=10)\n\nindex = VectorStoreIndex.from_documents(\n    documents, transformations=[text_splitter]\n)\n```\n\n### 4. Defining Nodes Manually\nAlternatively, you can skip parsing altogether and manually define `TextNode` objects and set up their relationships manually [5]:\n\n```python\nfrom llama_index.core.schema import TextNode, NodeRelationship, RelatedNodeInfo\n\nnode1 = TextNode(text=\"<text_chunk>\", id_=\"<node_id>\")\nnode2 = TextNode(text=\"<text_chunk>\", id_=\"<node_id>\")\n\n# set relationships\nnode1.relationships[NodeRelationship.NEXT] = RelatedNodeInfo(\n    node_id=node2.node_id\n)\nnode2.relationships[NodeRelationship.PREVIOUS] = RelatedNodeInfo(\n    node_id=node1.node_id\n)\nnodes = [node1, node2]\n```",
+      "citations": 7,
+      "queries_tried": [
+        "How does LlamaIndex split documents into nodes?"
+      ],
+      "latency_s": 28.319,
+      "cost_usd": 0.007112,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is a query engine in LlamaIndex?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In LlamaIndex, a query engine is an engine that provides natural language access to your data, serving as a powerful interface for question-answering (such as a Retrieval-Augmented Generation, or RAG, flow) [1]. \n\n### Basic Usage\nBy default, you can generate a query engine from an index and query it in just a few lines of code [2]:\n\n```python\nfrom llama_index.core import VectorStoreIndex, SimpleDirectoryReader\n\ndocuments = SimpleDirectoryReader(\"data\").load_data()\nindex = VectorStoreIndex.from_documents(documents)\nquery_engine = index.as_query_engine()\nresponse = query_engine.query(\"Summarize the documents.\")\n```\n\n### Types of Query Engines\nLlamaIndex provides several query engine implementations for different use cases:\n\n*   **RetrieverQueryEngine**: A low-level composition API that allows you to granularly customize the retrieval, post-processing, and response synthesis stages [7]:\n    ```python\n    from llama_index.core import VectorStoreIndex, get_response_synthesizer\n    from llama_index.core.retrievers import VectorIndexRetriever\n    from llama_index.core.query_engine import RetrieverQueryEngine\n    from llama_index.core.postprocessor import SimilarityPostprocessor\n\n    # build index\n    index = VectorStoreIndex.from_documents(documents)\n\n    # configure retriever\n    retriever = VectorIndexRetriever(\n        index=index,\n        similarity_top_k=10,\n    )\n\n    # configure response synthesizer\n    response_synthesizer = get_response_synthesizer()\n\n    # assemble query engine\n    query_engine = RetrieverQueryEngine(\n        retriever=retriever,\n        response_synthesizer=response_synthesizer,\n        node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],\n    )\n    ```\n*   **RouterQueryEngine**: Composed on top of other query engines wrapped as `QueryEngineTool`s. It uses a selector (such as an LLM) to choose and route queries to the most appropriate underlying query engine [4][6].\n*   **SubQuestionQueryEngine**: Used for multi-document queries. It generates a \"query plan\" consisting of multiple sub-queries against different query engine tools before synthesizing a final answer [5].\n*   **CustomQueryEngine**: A base class you can subclass to define a custom query engine. You define the attributes and implement a `custom_query` function [8]:\n    ```python\n    from llama_index.core.query_engine import CustomQueryEngine\n    from llama_index.core.retrievers import BaseRetriever\n    from llama_index.core.response_synthesizers import BaseSynthesizer\n\n    class RAGQueryEngine(CustomQueryEngine):\n        \"\"\"RAG Query Engine.\"\"\"\n\n        retriever: BaseRetriever\n        response_synthesizer: BaseSynthesizer\n\n        def custom_query(self, query_str: str):\n            nodes = self.retriever.retrieve(query_str)\n            response_obj = self.response_synthesizer.synthesize(query_str, nodes)\n            return response_obj\n    ```",
+      "citations": 7,
+      "queries_tried": [
+        "What is a query engine in LlamaIndex?"
+      ],
+      "latency_s": 16.474,
+      "cost_usd": 0.006309,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is a node parser in LlamaIndex?",
+      "category": "answerable",
+      "refused": false,
+      "refusal_reason": "",
+      "answer": "In LlamaIndex, a **node parser** (also referred to as a text splitter) converts `Document` objects into smaller, atomic chunks of data called `Node` objects, which are the primary data units LlamaIndex works with [1][2]. \n\n### Interface & Usage\nA node parser utilizes the `get_nodes_from_documents` interface to accept a list of documents and return a list of `Node` objects [1].\n\n#### Standalone Usage Example:\nNode parsers can be used on their own like this [4]:\n\n```python\nfrom llama_index.core import Document\nfrom llama_index.core.node_parser import SentenceSplitter\n\nnode_parser = SentenceSplitter(chunk_size=1024, chunk_overlap=20)\n\nnodes = node_parser.get_nodes_from_documents(\n    [Document(text=\"long text\")], show_progress=False\n)\n```\n\n#### Global Configuration Example:\nYou can also configure a global node parser / text splitter within your `Settings` [2]:\n\n```python\nfrom llama_index.core.node_parser import SentenceSplitter\nfrom llama_index.core import Settings\n\nSettings.text_splitter = SentenceSplitter(chunk_size=1024)\n```\n\n### Types of Node Parsers\nLlamaIndex provides several specialized node parsers, including:\n* **HTMLNodeParser**: For parsing raw HTML tags [3].\n* **HierarchicalNodeParser**: For chunking nodes into hierarchical levels with parent references [5].\n* **MarkdownNodeParser**: For parsing raw markdown text [6].\n* **JSONNodeParser**: For parsing raw JSON data [8].\n* **SimpleFileNodeParser**: For parsing files using file readers [7].",
+      "citations": 8,
+      "queries_tried": [
+        "What is a node parser in LlamaIndex?"
+      ],
+      "latency_s": 34.861,
+      "cost_usd": 0.00334,
+      "model_calls": 3,
+      "outcome": "answered",
+      "groundedness": 0,
+      "relevance": 0,
+      "unsupported_claims": [],
+      "judge_note": "judge failed to return valid JSON"
+    },
+    {
+      "question": "What is the capital of France?",
+      "category": "out_of_scope",
+      "refused": true,
+      "refusal_reason": "out_of_scope",
+      "answer": "That question is outside what I can answer. I only have the official documentation for LangChain, LangGraph, LangSmith, and LlamaIndex.",
+      "citations": 0,
+      "queries_tried": [],
+      "latency_s": 1.841,
+      "cost_usd": 0.000177,
+      "model_calls": 1,
+      "outcome": "correct_refusal"
+    },
+    {
+      "question": "How do I center a div with CSS flexbox?",
+      "category": "out_of_scope",
+      "refused": true,
+      "refusal_reason": "out_of_scope",
+      "answer": "That question is outside what I can answer. I only have the official documentation for LangChain, LangGraph, LangSmith, and LlamaIndex.",
+      "citations": 0,
+      "queries_tried": [],
+      "latency_s": 2.01,
+      "cost_usd": 0.00018,
+      "model_calls": 1,
+      "outcome": "correct_refusal"
+    },
+    {
+      "question": "Who won the football World Cup in 2022?",
+      "category": "out_of_scope",
+      "refused": true,
+      "refusal_reason": "out_of_scope",
+      "answer": "That question is outside what I can answer. I only have the official documentation for LangChain, LangGraph, LangSmith, and LlamaIndex.",
+      "citations": 0,
+      "queries_tried": [],
+      "latency_s": 2.298,
+      "cost_usd": 0.000213,
+      "model_calls": 1,
+      "outcome": "correct_refusal"
+    },
+    {
+      "question": "What is my current account balance?",
+      "category": "out_of_scope",
+      "refused": true,
+      "refusal_reason": "out_of_scope",
+      "answer": "That question is outside what I can answer. I only have the official documentation for LangChain, LangGraph, LangSmith, and LlamaIndex.",
+      "citations": 0,
+      "queries_tried": [],
+      "latency_s": 2.345,
+      "cost_usd": 0.000189,
+      "model_calls": 1,
+      "outcome": "correct_refusal"
+    },
+    {
+      "question": "What is the exact per-token price of Claude Opus 4.8 in euros?",
+      "category": "not_in_corpus",
+      "refused": true,
+      "refusal_reason": "out_of_scope",
+      "answer": "That question is outside what I can answer. I only have the official documentation for LangChain, LangGraph, LangSmith, and LlamaIndex.",
+      "citations": 0,
+      "queries_tried": [],
+      "latency_s": 1.625,
+      "cost_usd": 0.000217,
+      "model_calls": 1,
+      "outcome": "correct_refusal"
+    },
+    {
+      "question": "What is the default TCP keepalive timeout for LangGraph's Postgres checkpointer on FreeBSD?",
+      "category": "not_in_corpus",
+      "refused": true,
+      "refusal_reason": "not_in_corpus",
+      "answer": "I could not find this in the documentation I have indexed.\n\nI searched 3 way(s) and the passages returned did not contain the answer. Specifically missing: The retrieved passages contain no information about LangGraph's Postgres checkpointer, its TCP keepalive timeout settings, or platform-specific configurations for FreeBSD.",
+      "citations": 0,
+      "queries_tried": [
+        "What is the default TCP keepalive timeout for LangGraph's Postgres checkpointer on FreeBSD?",
+        "LangGraph PostgresSaver connection pool keepalives_idle psycopg TCP keepalive",
+        "psycopg2 connection keepalives_idle default system tcp keepalive"
+      ],
+      "latency_s": 29.114,
+      "cost_usd": 0.006639,
+      "model_calls": 6,
+      "outcome": "correct_refusal"
+    },
+    {
+      "question": "Which LangGraph release removed the `graph.step_timeout` attribute?",
+      "category": "not_in_corpus",
+      "refused": true,
+      "refusal_reason": "not_in_corpus",
+      "answer": "I could not find this in the documentation I have indexed.\n\nI searched 3 way(s) and the passages returned did not contain the answer. Specifically missing: The retrieved passages discuss timeouts, fault tolerance, and the LangGraph v1 migration guide (including dropping Python 3.9 support), but they do not mention the `graph.step_timeout` attribute or state which release removed it.",
+      "citations": 0,
+      "queries_tried": [
+        "Which LangGraph release removed the `graph.step_timeout` attribute?",
+        "LangGraph \"step_timeout\" deprecation OR release OR changelog",
+        "site:github.com/langchain-ai/langgraph \"step_timeout\""
+      ],
+      "latency_s": 88.052,
+      "cost_usd": 0.006888,
+      "model_calls": 6,
+      "outcome": "correct_refusal"
+    }
+  ]
+}

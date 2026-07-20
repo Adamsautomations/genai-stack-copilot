@@ -33,6 +33,7 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass
+from itertools import zip_longest
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,11 @@ from src.llm import (
 )
 
 CHUNKS_PATH = Path(__file__).resolve().parents[2] / "data" / "chunks.jsonl"
+
+# A pre-packed prefix, so the deployed image does not need the 120 MB corpus.
+# Also freezes the bytes: a prefix rebuilt at start-up could drift and silently
+# destroy caching, and a drifting cache key is invisible until the bill arrives.
+CONTEXT_EXPORT_PATH = Path(__file__).resolve().parents[2] / "data" / "cag_context.json"
 
 DEFAULT_CONTEXT_TOKENS = 150_000
 
@@ -81,15 +87,49 @@ def build_context(
     *,
     max_tokens: int = DEFAULT_CONTEXT_TOKENS,
     source: str | None = None,
+    allow_export: bool = True,
 ) -> CagContext:
     """Pack chunks into one stable block under a token budget.
+
+    Prefers the pre-packed export when present (that is what the deployed image
+    ships); falls back to packing from the raw corpus locally.
 
     Chunks are taken in corpus order, not relevance order — there is no query
     yet, which is the entire premise of CAG. Order is deterministic so the
     prefix is byte-identical across runs and can actually cache.
     """
+    if allow_export and CONTEXT_EXPORT_PATH.exists():
+        data = json.loads(CONTEXT_EXPORT_PATH.read_text(encoding="utf-8"))
+        return CagContext(
+            text=data["text"],
+            chunk_count=data["chunk_count"],
+            token_count=data["token_count"],
+            sources=data["sources"],
+        )
+
     if not CHUNKS_PATH.exists():
-        raise SystemExit(f"{CHUNKS_PATH} not found — build the corpus first.")
+        raise SystemExit(
+            f"Neither {CONTEXT_EXPORT_PATH.name} nor {CHUNKS_PATH.name} found — "
+            "run the ingestion pipeline, or `python -m src.cag.export_context`."
+        )
+
+    # Round-robin across sources. Reading in file order fills the whole budget
+    # from whichever source happens to come first — the first export packed
+    # 189 LangChain chunks and zero LlamaIndex, which would have quietly rigged
+    # the RAG-vs-CAG comparison against CAG on every LlamaIndex question.
+    by_source: dict[str, list[dict]] = {}
+    with CHUNKS_PATH.open(encoding="utf-8") as fh:
+        for line in fh:
+            if not line.strip():
+                continue
+            rec = json.loads(line)
+            if source and rec["source"] != source:
+                continue
+            by_source.setdefault(rec["source"], []).append(rec)
+
+    ordered: list[dict] = []
+    for group in zip_longest(*(by_source[k] for k in sorted(by_source))):
+        ordered.extend(r for r in group if r is not None)
 
     parts: list[str] = []
     sources: dict[str, int] = {}
@@ -98,24 +138,17 @@ def build_context(
     # a network round-trip per chunk; the exact count is verified once below.
     char_budget = max_tokens * 3.6
 
-    with CHUNKS_PATH.open(encoding="utf-8") as fh:
-        for line in fh:
-            if not line.strip():
-                continue
-            rec = json.loads(line)
-            if source and rec["source"] != source:
-                continue
+    for rec in ordered:
+        where = rec["title"]
+        if rec.get("heading"):
+            where = f"{where} › {rec['heading']}"
+        block = f"## {where}\n{rec['content']}"
 
-            where = rec["title"]
-            if rec.get("heading"):
-                where = f"{where} › {rec['heading']}"
-            block = f"## {where}\n{rec['content']}"
-
-            if running_chars + len(block) > char_budget:
-                break
-            parts.append(block)
-            running_chars += len(block)
-            sources[rec["source"]] = sources.get(rec["source"], 0) + 1
+        if running_chars + len(block) > char_budget:
+            break
+        parts.append(block)
+        running_chars += len(block)
+        sources[rec["source"]] = sources.get(rec["source"], 0) + 1
 
     text = CAG_SYSTEM_PREFIX + "\n\n".join(parts)
     exact = count_tokens(settings.google_api_key, MODEL_SYNTHESIS, text)

@@ -42,11 +42,18 @@ relevance (1-5): 5 = directly answers what was asked. 1 = ignores the question.
 
 List any claim that the passages do not support."""
 
+# NOTE — cross-provider gotcha. Gemini's `responseSchema` requires `enum`
+# values to be STRINGS. `{"type": "integer", "enum": [1,2,3,4,5]}` is valid
+# JSON Schema and is rejected with:
+#   400 Invalid value at '...response_schema.properties[0].value.enum[0]'
+#       (TYPE_STRING), 1
+# Bounded integers must use minimum/maximum instead. String enums (used by the
+# router and grader schemas) are fine.
 JUDGE_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "groundedness": {"type": "integer", "enum": [1, 2, 3, 4, 5]},
-        "relevance": {"type": "integer", "enum": [1, 2, 3, 4, 5]},
+        "groundedness": {"type": "integer", "minimum": 1, "maximum": 5},
+        "relevance": {"type": "integer", "minimum": 1, "maximum": 5},
         "unsupported_claims": {"type": "array", "items": {"type": "string"}},
         "note": {"type": "string"},
     },
@@ -71,11 +78,14 @@ def judge(settings: Settings, question: str, passages_text: str, answer: str) ->
         thinking_budget=THINK_DYNAMIC,
         max_tokens=4096,
         label="judge",
+        # `None`, not 0 — a failed judge must be distinguishable from a bad
+        # score. Scoring it 0 hid a 100%-failure rate behind a plausible
+        # "groundedness_mean: None" the first time this ran.
         fallback={
-            "groundedness": 0,
-            "relevance": 0,
+            "groundedness": None,
+            "relevance": None,
             "unsupported_claims": [],
-            "note": "judge failed to return valid JSON",
+            "note": "JUDGE_FAILED",
         },
     )
 
@@ -128,10 +138,15 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     answered = [r for r in answerable if r["outcome"] == "answered"]
     refusal_cases = [r for r in records if r["category"] != "answerable"]
 
-    grounded = [r["groundedness"] for r in answered if r.get("groundedness")]
-    relevant = [r["relevance"] for r in answered if r.get("relevance")]
+    grounded = [r["groundedness"] for r in answered if r.get("groundedness") is not None]
+    relevant = [r["relevance"] for r in answered if r.get("relevance") is not None]
+    judge_failures = sum(1 for r in answered if r.get("judge_note") == "JUDGE_FAILED")
 
     return {
+        # Surfaced first: if the judge failed, every score below is meaningless
+        # and the run should not be reported as an evaluation.
+        "judge_failures": judge_failures,
+        "judged_ok": len(grounded),
         "totals": {
             "questions": len(records),
             "answerable": len(answerable),

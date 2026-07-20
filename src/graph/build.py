@@ -15,7 +15,7 @@ instead of producing a wrong answer.
 
 from __future__ import annotations
 
-from functools import partial
+from functools import lru_cache, partial
 
 from langgraph.graph import END, START, StateGraph
 
@@ -25,8 +25,15 @@ from src.graph.state import State
 from src.llm import Usage
 
 
+@lru_cache(maxsize=4)
 def build_graph(settings: Settings):
-    """Compile the graph with `settings` bound into every node."""
+    """Compile the graph with `settings` bound into every node.
+
+    Cached: compilation is pure topology and does not depend on the request,
+    but `answer()` is called per HTTP request — without this the graph was
+    being rebuilt on every question. `Settings` is a frozen dataclass, so it
+    hashes cleanly as the cache key.
+    """
     g = StateGraph(State)
 
     g.add_node("route", partial(nodes.route, settings))

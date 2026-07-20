@@ -127,7 +127,10 @@ a whole corpus.
 
 ---
 
-## Two bugs worth keeping in the write-up
+## Three bugs worth keeping in the write-up
+
+Two of these share a theme: **a check that fails silently is worse than no
+check, because you stop looking at it.**
 
 **1. A safety check that silently did nothing.**
 `GetIndexStatisticsResult` has a `.get()` method — but it does not read model
@@ -141,6 +144,29 @@ is worse than none, because you stop looking.*
 That same endpoint reported **0 documents while the index was already serving all
 10,250** — confirmed with `search_text="*"` and `include_total_count=True`. Index
 statistics are advisory; if you need a real count, query for it.
+
+**3. A JSON Schema that is valid everywhere except here.**
+The eval judge failed on **100% of calls** on its first run, and the summary
+reported `groundedness_mean: null` — which reads like "no data" rather than
+"the judge is completely broken." The cause:
+
+```
+400 Invalid value at 'generation_config.response_schema.properties[0].value.enum[0]'
+    (TYPE_STRING), 1
+```
+
+Gemini's `responseSchema` requires `enum` values to be **strings**.
+`{"type": "integer", "enum": [1,2,3,4,5]}` is perfectly valid JSON Schema and is
+rejected outright; bounded integers need `minimum`/`maximum`. String enums (used
+by the router and grader) are fine, which is why only the judge broke.
+
+Two fixes, not one: the schema, *and* the fallback now returns `None` with a
+`JUDGE_FAILED` marker and the summary reports `judge_failures` as its **first**
+line — so a broken judge can never again masquerade as a missing metric.
+
+The judge was then verified to *discriminate*, not merely respond: fed a
+deliberately fabricated claim, it returned groundedness 2/5 and named the
+invention. A judge that rubber-stamps is worse than no judge.
 
 ---
 
@@ -163,6 +189,31 @@ Evaluation:
 python -m src.evals.run_evals         # RAG scored on all three categories
 python -m src.evals.compare           # RAG vs CAG, same questions
 ```
+
+### Deploying
+
+Container Apps, built from source — no local Docker or registry needed:
+
+```bash
+az group create -n genai-copilot-rg -l polandcentral
+az containerapp up \
+  --name genai-stack-copilot \
+  --resource-group genai-copilot-rg \
+  --location polandcentral \
+  --source . \
+  --ingress external --target-port 8000 \
+  --env-vars GOOGLE_API_KEY=secretref:google-key \
+             AZURE_SEARCH_ENDPOINT=... \
+             AZURE_SEARCH_KEY=secretref:search-key \
+             SESSION_COST_CAP_CENTS=25
+```
+
+Deployed **separately from any production infrastructure**, in its own resource
+group. The image bakes the embedding model at build time so a cold replica
+doesn't spend its first request downloading 130 MB.
+
+**Scale it to one replica**, or move the spend cap to shared state first — see
+*What I'd change*.
 
 ---
 

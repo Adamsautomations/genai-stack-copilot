@@ -3,10 +3,17 @@
 Runs an identical question set through both paths and reports latency, cost,
 token mix, cache behaviour, and judged groundedness side by side.
 
-Both are judged by the same judge against the same standard. The judge sees
-RAG's retrieved passages, and for CAG it sees the answer alone — CAG has no
-retrieval step to check against, which is itself part of the comparison: with
-RAG you can audit *why* an answer was given, with CAG you largely cannot.
+**Groundedness is scored for RAG only, deliberately.** The judge grades an
+answer strictly against the passages it was given. RAG has those passages; CAG
+does not — its evidence is a 151k-token context block, and handing that to the
+judge on every question would cost more than the run it is measuring.
+
+Scoring CAG against *empty* passages would have returned near-zero groundedness
+for every answer regardless of quality — a rigged comparison dressed up as a
+measurement. So the comparison reports cost, latency and cache behaviour for
+both, groundedness for RAG, and states the asymmetry rather than papering over
+it. That asymmetry *is* a finding: with RAG you can audit why an answer was
+given; with CAG you largely cannot.
 
     python -m src.evals.compare [--questions N] [--context-tokens N]
 """
@@ -134,15 +141,14 @@ def main() -> int:
             f"  g={rag.get('groundedness','-')}"
         )
 
+        # No groundedness score here — see the module docstring. Judging CAG
+        # against empty passages would manufacture a near-zero score.
         cag = run_cag(settings, question, context)
-        v = judge(settings, question, "", cag["answer"])
-        cag["groundedness"] = v["groundedness"]
-        cag["relevance"] = v["relevance"]
         cag_rows.append(cag)
         print(
             f"    CAG  {cag['latency_s']:>5.1f}s  ${cag['cost_usd']:.5f}  "
             f"prompt={cag['prompt_tokens']:>6}  cached={cag['cached_tokens']:>6}"
-            f"  g={cag.get('groundedness','-')}"
+            f"  hit={cag['cache_hit']}"
         )
 
     for rows in (rag_rows, cag_rows):
