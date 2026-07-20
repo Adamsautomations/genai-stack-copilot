@@ -1,0 +1,586 @@
+{
+  "top_k": 5,
+  "azure_semantic_rerank": false,
+  "summary": {
+    "mean_overlap": 0.4818181818181818,
+    "zero_overlap": 0,
+    "full_overlap": 0,
+    "mean_spearman": 0.5619047619047619,
+    "median_ms_azure": 180.65,
+    "median_ms_pgvector": 4.300000000000001
+  },
+  "rows": [
+    {
+      "question": "How do I add persistence to a LangGraph graph?",
+      "category": "answerable",
+      "azure_ids": [
+        "f34f6c79fd0843526592630555875864",
+        "ee7f2a248bc5f33362cab3a23e65f999",
+        "405e86f89bb46a6857b8012c77ac575f",
+        "8218c931e64c369fb42357e4b9626034",
+        "a7686d6075599953e505ea86a1edb4cb"
+      ],
+      "pgvector_ids": [
+        "576d14740d97c6a6909dcf2e83dbdea0",
+        "ee7f2a248bc5f33362cab3a23e65f999",
+        "405e86f89bb46a6857b8012c77ac575f",
+        "a5ce183feed0d05f13d77ad320786652",
+        "5874e4a3a9c66c3f9e7e0c4d863633d5"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 561.5,
+      "pgvector_ms": 429.4,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "What is a checkpointer in LangGraph?",
+      "category": "answerable",
+      "azure_ids": [
+        "66a46815cf35204e99611bd06ae49bbe",
+        "5874e4a3a9c66c3f9e7e0c4d863633d5",
+        "f0261c47f072162392b2310a26a0bc60",
+        "6fea7801b878c20b5a6fd79549f6edd6",
+        "a5775b6d4304d4946bc521ebc9bacc55"
+      ],
+      "pgvector_ids": [
+        "5874e4a3a9c66c3f9e7e0c4d863633d5",
+        "bf622aa9b93feaa21186b099e976d881",
+        "a5775b6d4304d4946bc521ebc9bacc55",
+        "adadb313a75a4557cdee344753838409",
+        "f030ecc1f8e7cb041c4f8465da04eddb"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 215.5,
+      "pgvector_ms": 8.0,
+      "azure_used_semantic": false,
+      "pg_vector_only": 2,
+      "pg_text_only": 2,
+      "pg_both": 1
+    },
+    {
+      "question": "How do I stream output from a LangGraph graph?",
+      "category": "answerable",
+      "azure_ids": [
+        "933c2bc1de2e09cc2036da528d37b02c",
+        "02013daa6fcb58d29ffecb058396c09b",
+        "88749267f711e735aaa84a490b5bc216",
+        "f877f0739cdcad388a3abb1492f37a09",
+        "f8fc7e94330048a68914ee7ba1af9b47"
+      ],
+      "pgvector_ids": [
+        "dee841b781334e454e1ccccbd9799159",
+        "933c2bc1de2e09cc2036da528d37b02c",
+        "0359867254a9b7a771795874d25d3727",
+        "f8fc7e94330048a68914ee7ba1af9b47",
+        "10c2ff8d298511e4eafbab7032d8389b"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 186.9,
+      "pgvector_ms": 6.1,
+      "azure_used_semantic": false,
+      "pg_vector_only": 0,
+      "pg_text_only": 0,
+      "pg_both": 5
+    },
+    {
+      "question": "What is the difference between a node and an edge in LangGraph?",
+      "category": "answerable",
+      "azure_ids": [
+        "572b03e7cdf02f3e5b2af0734230fc66",
+        "dc945ea6c598cbda8ed5e902c7087c27",
+        "576d14740d97c6a6909dcf2e83dbdea0",
+        "7bfda7c419bb2fa3c4a40104c55f7310",
+        "73b565abd5b4ca8348386259be218d88"
+      ],
+      "pgvector_ids": [
+        "ac886b0c6fa382bb4258586fd489e859",
+        "572b03e7cdf02f3e5b2af0734230fc66",
+        "d48137bb33ff0b0af15ec6da7d2ab077",
+        "7bfda7c419bb2fa3c4a40104c55f7310",
+        "576d14740d97c6a6909dcf2e83dbdea0"
+      ],
+      "overlap": 0.6,
+      "spearman": 0.5,
+      "azure_ms": 197.5,
+      "pgvector_ms": 5.3,
+      "azure_used_semantic": false,
+      "pg_vector_only": 2,
+      "pg_text_only": 2,
+      "pg_both": 1
+    },
+    {
+      "question": "How do subgraphs work in LangGraph?",
+      "category": "answerable",
+      "azure_ids": [
+        "dc945ea6c598cbda8ed5e902c7087c27",
+        "babb60dbe250edd76769de39d74c3961",
+        "f8fc7e94330048a68914ee7ba1af9b47",
+        "01cdb83f7fc7edaea752cde4c3a396b1",
+        "b0839327cbf00790c0ec55e66f57abdc"
+      ],
+      "pgvector_ids": [
+        "66a46815cf35204e99611bd06ae49bbe",
+        "babb60dbe250edd76769de39d74c3961",
+        "dc945ea6c598cbda8ed5e902c7087c27",
+        "a49c510c7bf8ecf7134828e838348377",
+        "b0839327cbf00790c0ec55e66f57abdc"
+      ],
+      "overlap": 0.6,
+      "spearman": 0.5,
+      "azure_ms": 177.0,
+      "pgvector_ms": 6.0,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "How do I add memory to a LangGraph agent?",
+      "category": "answerable",
+      "azure_ids": [
+        "9c2b81f4cfddf38ffe7cb6e24e842ba1",
+        "361cec3ef5e3bd03dbcb11fcb48664c9",
+        "dc37d8eed7f209a3c5c1ee224bdd1407",
+        "5a2980551ae65e57fd2ffedfcdbafeac",
+        "6f0d7000725cd7015ffea07ed724b16a"
+      ],
+      "pgvector_ids": [
+        "e5d736d77df114689b3b5ae3d2f222c8",
+        "9c2b81f4cfddf38ffe7cb6e24e842ba1",
+        "361cec3ef5e3bd03dbcb11fcb48664c9",
+        "fa513ab0c9820b72773997b896461f9f",
+        "933bc7dd31c67e0ca7f78e107623a4d0"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 180.9,
+      "pgvector_ms": 11.1,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "What are conditional edges in LangGraph?",
+      "category": "answerable",
+      "azure_ids": [
+        "047142b6a7bb79e9062ee3f906f9f91d",
+        "1501a896e49854a0a5b9dc19e8dc686d",
+        "4c7b5b52475b2bb502e0313c3e49f920",
+        "572b03e7cdf02f3e5b2af0734230fc66",
+        "f68d05ed5e4fa4304ea08bc24642091c"
+      ],
+      "pgvector_ids": [
+        "1501a896e49854a0a5b9dc19e8dc686d",
+        "3fef75a38e0d603b1a711228288697c9",
+        "5b16dc3de63e5847e9f538eed57a9482",
+        "7cdc8e755c4f31401fa672345f253249",
+        "d48137bb33ff0b0af15ec6da7d2ab077"
+      ],
+      "overlap": 0.2,
+      "spearman": null,
+      "azure_ms": 159.2,
+      "pgvector_ms": 4.4,
+      "azure_used_semantic": false,
+      "pg_vector_only": 1,
+      "pg_text_only": 1,
+      "pg_both": 3
+    },
+    {
+      "question": "How do I pause a LangGraph run for human input?",
+      "category": "answerable",
+      "azure_ids": [
+        "9e2af364582794fd785c86be3eff9c6c",
+        "833fd13a19d1423600654a8b4925ef51",
+        "6e3725de0f0ede337e2404d4469c75a7",
+        "7a98f4ffddc65e32de0df967bf9e3017",
+        "f7d095befcc13241f4c4430a65104198"
+      ],
+      "pgvector_ids": [
+        "9e2af364582794fd785c86be3eff9c6c",
+        "7332263299ce63b21cea514b33532f5b",
+        "833fd13a19d1423600654a8b4925ef51",
+        "6e3725de0f0ede337e2404d4469c75a7",
+        "9ce1b8ac50ac6e310ab79c619a18bebd"
+      ],
+      "overlap": 0.6,
+      "spearman": 1.0,
+      "azure_ms": 198.2,
+      "pgvector_ms": 5.7,
+      "azure_used_semantic": false,
+      "pg_vector_only": 2,
+      "pg_text_only": 2,
+      "pg_both": 1
+    },
+    {
+      "question": "What is LangSmith used for?",
+      "category": "answerable",
+      "azure_ids": [
+        "a383531209f559eebb34682e5da06776",
+        "ca90b2be307ba2387731de6aa70df16c",
+        "ab06c1a94aeb3f40d5d9df96a16951a5",
+        "1d3b8dbcc41b294f88eab5a8d56c3399",
+        "9e460e277a4d2484996dc7211670d319"
+      ],
+      "pgvector_ids": [
+        "ca90b2be307ba2387731de6aa70df16c",
+        "921716a8c09029468af5e36385cc8db7",
+        "9e460e277a4d2484996dc7211670d319",
+        "3e9c3effeaf6a2c00902a6c43bb0de56",
+        "b35268f18f9a3cf12b364ee00a8fdabd"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 179.7,
+      "pgvector_ms": 20.1,
+      "azure_used_semantic": false,
+      "pg_vector_only": 2,
+      "pg_text_only": 2,
+      "pg_both": 1
+    },
+    {
+      "question": "How do I add tracing to a LangChain application?",
+      "category": "answerable",
+      "azure_ids": [
+        "1c47613637bbbac7a7bcece662f595fb",
+        "62aed9f3999a2964a1c0794bfb6f5744",
+        "1b131588c28d75c1799bfeab1b3c3d75",
+        "5d0cb33a7a321c19b4376d8a873a3b54",
+        "21c760213967ed39676bbdfdbb0abf4a"
+      ],
+      "pgvector_ids": [
+        "16a959995abe062bc00ebdd1e0a26e83",
+        "1c47613637bbbac7a7bcece662f595fb",
+        "1b131588c28d75c1799bfeab1b3c3d75",
+        "921716a8c09029468af5e36385cc8db7",
+        "86178f97e88b5a9ed24accde387a1f80"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 167.2,
+      "pgvector_ms": 7.5,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "What is a tool in LangChain and how do I define one?",
+      "category": "answerable",
+      "azure_ids": [
+        "cbea29dd17d369e603ead8dbde41d2b0",
+        "ec457765ac88df74ee09c6b002667488",
+        "29ed7fb1d7651a1f4fa1bfb922088834",
+        "6c5ed3017eebfca0f730466605aeaac3",
+        "1d3b8dbcc41b294f88eab5a8d56c3399"
+      ],
+      "pgvector_ids": [
+        "2c688a36a40192ef72edaceeaf875689",
+        "cbea29dd17d369e603ead8dbde41d2b0",
+        "29ed7fb1d7651a1f4fa1bfb922088834",
+        "a3c36bb3bf05dcfc06990d9a35c35178",
+        "ba2f9804e0af4bf68c76e4f559ccf0d9"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 194.3,
+      "pgvector_ms": 9.1,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "What is a VectorStoreIndex in LlamaIndex?",
+      "category": "answerable",
+      "azure_ids": [
+        "9ba53b91ed2d0ede36050a2d0e07e32c",
+        "12abdf7180794a47abb73a1e8025fc46",
+        "84855ddf3105cc2a0d0c5f4ec286f46a",
+        "2fe3961ef9cab2d7643ce28db5d15e18",
+        "8c47a61d4a2248670151d78978f24dc2"
+      ],
+      "pgvector_ids": [
+        "9ba53b91ed2d0ede36050a2d0e07e32c",
+        "84855ddf3105cc2a0d0c5f4ec286f46a",
+        "2fe3961ef9cab2d7643ce28db5d15e18",
+        "4f21e62a8bed3871172e74d1760f2640",
+        "d97ad33c89e781d346a64be85ad39d3e"
+      ],
+      "overlap": 0.6,
+      "spearman": 1.0,
+      "azure_ms": 188.2,
+      "pgvector_ms": 3.1,
+      "azure_used_semantic": false,
+      "pg_vector_only": 0,
+      "pg_text_only": 0,
+      "pg_both": 5
+    },
+    {
+      "question": "How does LlamaIndex split documents into nodes?",
+      "category": "answerable",
+      "azure_ids": [
+        "ebdd1dcfaf1085f636d7ad3e55504eba",
+        "f35ad161e180732211232253a6683dcc",
+        "85a4c20b6cbdfe8dfab4e8b4999630d7",
+        "797dce6a728364380b0a7177aa786cd4",
+        "12d89fc3b6456673adcac50385c29897"
+      ],
+      "pgvector_ids": [
+        "797dce6a728364380b0a7177aa786cd4",
+        "b9b1230fbf299fd6f420eae4ad14e3f0",
+        "fe444d932770204f7a92452424475471",
+        "85a4c20b6cbdfe8dfab4e8b4999630d7",
+        "f35ad161e180732211232253a6683dcc"
+      ],
+      "overlap": 0.6,
+      "spearman": -1.0,
+      "azure_ms": 141.8,
+      "pgvector_ms": 2.7,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 1,
+      "pg_both": 1
+    },
+    {
+      "question": "What is a query engine in LlamaIndex?",
+      "category": "answerable",
+      "azure_ids": [
+        "dedb96ae8041641a32efdf29810586ca",
+        "35c91a0937ed6707716e59a98bfb7c58",
+        "3e358920b29634c81b5dfb8fb0636d18",
+        "60d312e2ae18154644c1b30f809a20d0",
+        "9c4884ae7415f6fb27fbb2831c6929ea"
+      ],
+      "pgvector_ids": [
+        "dedb96ae8041641a32efdf29810586ca",
+        "5966d927bae203346898504ba602102c",
+        "2fe3961ef9cab2d7643ce28db5d15e18",
+        "29fc01fd8698e6ee001666eb30c63d42",
+        "60d312e2ae18154644c1b30f809a20d0"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 161.6,
+      "pgvector_ms": 3.4,
+      "azure_used_semantic": false,
+      "pg_vector_only": 1,
+      "pg_text_only": 0,
+      "pg_both": 4
+    },
+    {
+      "question": "What is a node parser in LlamaIndex?",
+      "category": "answerable",
+      "azure_ids": [
+        "1aba3bd152af4472265c2b1d19a4cf2d",
+        "12d89fc3b6456673adcac50385c29897",
+        "0c6d18006f3e31d2c714a4f38b9baa6d",
+        "4a7a1a79b56809d25a605aad92e2f0df",
+        "34027c3dcb230a15c171d8e1752979eb"
+      ],
+      "pgvector_ids": [
+        "12d89fc3b6456673adcac50385c29897",
+        "1aba3bd152af4472265c2b1d19a4cf2d",
+        "5582591cee01cb9eaccf3d877a753fde",
+        "34027c3dcb230a15c171d8e1752979eb",
+        "f10958ad26dbaf8c567ec2bab99b161c"
+      ],
+      "overlap": 0.6,
+      "spearman": 0.5,
+      "azure_ms": 180.4,
+      "pgvector_ms": 2.4,
+      "azure_used_semantic": false,
+      "pg_vector_only": 2,
+      "pg_text_only": 2,
+      "pg_both": 1
+    },
+    {
+      "question": "What is the capital of France?",
+      "category": "out_of_scope",
+      "azure_ids": [
+        "85720b6eceee0e6a8ca18ead2d54a651",
+        "fc9e62149de42ae99b97915f175ce1d9",
+        "76c099ce16ab416c80f032fe213af059",
+        "8b32d25ed3bab24bba0f75c133ff0400",
+        "d83f2d6f0c0e3e8bccdf00f1b316e713"
+      ],
+      "pgvector_ids": [
+        "0f54bef07ffdb11e5ee4f272e87dcc0b",
+        "85720b6eceee0e6a8ca18ead2d54a651",
+        "d83f2d6f0c0e3e8bccdf00f1b316e713",
+        "c3be09cbb9c5650e9750a9ff7b880506",
+        "37f4817afe10fb284513cf72f6b78fc6"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 190.1,
+      "pgvector_ms": 4.2,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "How do I center a div with CSS flexbox?",
+      "category": "out_of_scope",
+      "azure_ids": [
+        "54535da040c56e87b75d2637014a1344",
+        "945ae06a67473c7abaa52fc53346224c",
+        "7e97b989b5cd4c9d03970a4e060448d5",
+        "89ecf46652bb6bba6f8bdd77a77ca29a",
+        "a91efbf919d4a0272f94a48ccf778555"
+      ],
+      "pgvector_ids": [
+        "7e97b989b5cd4c9d03970a4e060448d5",
+        "89ecf46652bb6bba6f8bdd77a77ca29a",
+        "15ab6bbe0a29406dea230e80b982cd5f",
+        "a91efbf919d4a0272f94a48ccf778555",
+        "b3c61156d8559439649fc948d3be1829"
+      ],
+      "overlap": 0.6,
+      "spearman": 1.0,
+      "azure_ms": 157.1,
+      "pgvector_ms": 2.6,
+      "azure_used_semantic": false,
+      "pg_vector_only": 5,
+      "pg_text_only": 0,
+      "pg_both": 0
+    },
+    {
+      "question": "Who won the football World Cup in 2022?",
+      "category": "out_of_scope",
+      "azure_ids": [
+        "db38f51e3cf7f51a519f30f301447a50",
+        "6b8cf8cf1625ebde4f513284c0e37fb2",
+        "8a26dc9c7f2650ab413fbb9968fc767a",
+        "dfeec221954543b7d4494cdb348fb96e",
+        "55b8299a865b09df0aaca08465f5ee00"
+      ],
+      "pgvector_ids": [
+        "db38f51e3cf7f51a519f30f301447a50",
+        "dfeec221954543b7d4494cdb348fb96e",
+        "a11f5849a65ad4950ef2b9daaf44aee5",
+        "2c7367adc42a0e250e13073fc41719f7",
+        "61332a4cc8fdb3c73228004f85ef5005"
+      ],
+      "overlap": 0.4,
+      "spearman": 1.0,
+      "azure_ms": 182.7,
+      "pgvector_ms": 3.7,
+      "azure_used_semantic": false,
+      "pg_vector_only": 5,
+      "pg_text_only": 0,
+      "pg_both": 0
+    },
+    {
+      "question": "What is my current account balance?",
+      "category": "out_of_scope",
+      "azure_ids": [
+        "bb08391817249edbe3611a86f80b459c",
+        "af4077816ffe48423bce4c8584258e83",
+        "c69858c93220617aa49cda0d5146cd9c",
+        "3867cc41ed118203a0fe07034393b074",
+        "ec457765ac88df74ee09c6b002667488"
+      ],
+      "pgvector_ids": [
+        "af4077816ffe48423bce4c8584258e83",
+        "c69858c93220617aa49cda0d5146cd9c",
+        "3867cc41ed118203a0fe07034393b074",
+        "54ba939c68edbe9576ed4d876a76edc1",
+        "bb08391817249edbe3611a86f80b459c"
+      ],
+      "overlap": 0.8,
+      "spearman": -0.19999999999999996,
+      "azure_ms": 167.0,
+      "pgvector_ms": 3.8,
+      "azure_used_semantic": false,
+      "pg_vector_only": 3,
+      "pg_text_only": 2,
+      "pg_both": 0
+    },
+    {
+      "question": "What is the exact per-token price of Claude Opus 4.8 in euros?",
+      "category": "not_in_corpus",
+      "azure_ids": [
+        "80d9ad8fa278314431c0ec2d94f6cdc1",
+        "e10daac6cc3326893004e067733f8824",
+        "f838dd6a99520ddd2fa5beb667b5b1f3",
+        "0233fd257c89aa70e304a35d0db14826",
+        "3e90515f244039b75f971c981df05545"
+      ],
+      "pgvector_ids": [
+        "f838dd6a99520ddd2fa5beb667b5b1f3",
+        "80d9ad8fa278314431c0ec2d94f6cdc1",
+        "dd26d847b42ace321a2a0b15a4f12b3f",
+        "381ee1595dbb414639e59ef4b8244e25",
+        "8f0772b474b0c454a2de4f854c4d5973"
+      ],
+      "overlap": 0.4,
+      "spearman": -1.0,
+      "azure_ms": 172.7,
+      "pgvector_ms": 3.1,
+      "azure_used_semantic": false,
+      "pg_vector_only": 5,
+      "pg_text_only": 0,
+      "pg_both": 0
+    },
+    {
+      "question": "What is the default TCP keepalive timeout for LangGraph's Postgres checkpointer on FreeBSD?",
+      "category": "not_in_corpus",
+      "azure_ids": [
+        "34d2312be808147fbd2c464e7c31c389",
+        "bcbd4ae0ff3c564b20fafb211f308889",
+        "6fea7801b878c20b5a6fd79549f6edd6",
+        "bf43c939c038239eb7e4b617b34bab2f",
+        "08b2cf24057858b206beaf336c090087"
+      ],
+      "pgvector_ids": [
+        "34d2312be808147fbd2c464e7c31c389",
+        "bf43c939c038239eb7e4b617b34bab2f",
+        "429afd9b08c40c6a95464094ec96638e",
+        "e3195150b4142eb65c1bfde6f04d89fa",
+        "bcbd4ae0ff3c564b20fafb211f308889"
+      ],
+      "overlap": 0.6,
+      "spearman": 0.5,
+      "azure_ms": 189.0,
+      "pgvector_ms": 2.9,
+      "azure_used_semantic": false,
+      "pg_vector_only": 5,
+      "pg_text_only": 0,
+      "pg_both": 0
+    },
+    {
+      "question": "Which LangGraph release removed the `graph.step_timeout` attribute?",
+      "category": "not_in_corpus",
+      "azure_ids": [
+        "7540032ae27cbe410fd86b9d4f9ea6ca",
+        "1754ba03b7e1c4387c604e3035ef2310",
+        "2bec8b884c1b55b9cc8e1f5ebc14f42a",
+        "282ab6ef69a067ffe0891e8693f8cf97",
+        "1e1be4fa10cd06f6fca4ef9c2680b16f"
+      ],
+      "pgvector_ids": [
+        "2bec8b884c1b55b9cc8e1f5ebc14f42a",
+        "7540032ae27cbe410fd86b9d4f9ea6ca",
+        "94f0e091ad8a7fda7f857c8610b53569",
+        "5f87ab992deb6c2ead60bb3ea30f8df7",
+        "94135e35cc5831b01e33769a046796fc"
+      ],
+      "overlap": 0.4,
+      "spearman": -1.0,
+      "azure_ms": 175.1,
+      "pgvector_ms": 2.8,
+      "azure_used_semantic": false,
+      "pg_vector_only": 5,
+      "pg_text_only": 0,
+      "pg_both": 0
+    }
+  ]
+}

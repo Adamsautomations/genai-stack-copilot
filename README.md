@@ -186,6 +186,73 @@ questions are simply outside what it can see.
 
 ---
 
+## The same retrieval on Postgres + pgvector
+
+Managed vector search is easy to treat as a black box, so the hybrid retrieval
+was rebuilt on `pgvector` and run head-to-head. Both engines index the **same
+10,250 chunks** with the **same 384-dim `bge-small-en-v1.5` vectors**, so
+nothing here measures embedding quality — only the index, the keyword side, and
+the fusion.
+
+Azure gives you three things in one query: HNSW vector search, BM25, and
+Reciprocal Rank Fusion over both. Postgres has the first two — `pgvector` and
+`ts_rank_cd` — but nothing that fuses them, so RRF is written out by hand in
+`src/retrieval/pgvector_store.py`. Writing it makes the hidden step explicit,
+and that step is where hybrid retrieval earns its keep.
+
+```
+10,250 rows copied   6.0s        HNSW (m=16, ef_construction=64)   1.6s
+GIN index            0.4s        total relation size               85 MB
+```
+
+### Result
+
+| | Azure reranker **on** | Azure reranker **off** |
+|---|---|---|
+| mean overlap@5 | 41.8% | 48.2% |
+| questions with 0 overlap | 1 of 22 | 0 of 22 |
+| questions with full overlap | 0 of 22 | 0 of 22 |
+| mean Spearman (shared ids) | **−0.22** | **+0.56** |
+
+**Turning off Azure's L2 semantic reranker flips rank correlation from −0.22 to
++0.56.** That is the whole finding. With the reranker off, two independently
+built hybrid engines — different vector index, different keyword scorer, the
+same RRF constant of 60 — order their shared results substantially the same
+way. With it on, the correlation goes slightly *negative*: the reranker is not
+nudging RRF's ordering, it is overriding it.
+
+So the commodity part is the part people usually shop for. HNSW, cosine
+distance and RRF are close to interchangeable here. What the managed service
+actually sells is the reranker, and that is the component with no pgvector
+equivalent.
+
+Membership still differs by about half even with the reranker off, because
+BM25 and `ts_rank_cd` are genuinely different scorers — so "roughly the same
+five passages in roughly the same order" was never on offer.
+
+### On the latency numbers
+
+Median 14 ms (pgvector) vs 255 ms (Azure) is **not** a like-for-like result and
+is not quoted as one: pgvector is a local Unix socket, Azure is a network round
+trip to `polandcentral`. It measures local-beats-remote, not
+pgvector-beats-Azure. The first pgvector query also took 6.1 s — cold HNSW page
+cache — which is why the medians are quoted rather than the means.
+
+### What this does not claim
+
+There is **no relevance ground truth here**, and none was invented. Treating
+either engine's ranking as the reference would only measure how much the other
+agrees with an arbitrary choice. The numbers are agreement, latency and cost;
+the conclusion is about *where* the two disagree, not which is right.
+
+```bash
+python -m src.retrieval.pgvector_store --load
+python -m src.evals.compare_retrieval                # reranker on
+python -m src.evals.compare_retrieval --no-semantic  # hybrid vs hybrid
+```
+
+---
+
 ## Decisions worth explaining
 
 ### Retrieval is hybrid, and degrades instead of failing
