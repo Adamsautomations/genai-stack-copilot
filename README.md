@@ -7,6 +7,11 @@ and refuses when the corpus doesn't cover the question.
 It also implements the same task a second way — **cache-augmented generation**,
 with no retriever at all — and measures both against the same question set.
 
+**Live:** https://genai-stack-copilot.thankfulwave-dfa71a92.polandcentral.azurecontainerapps.io
+
+*(Scales to zero when idle, so the first request after a quiet period takes
+~30–60s to cold-start. Every session has a hard spend cap.)*
+
 ![Architecture](docs/architecture.svg)
 
 **Stack:** LangGraph (orchestration) · LlamaIndex (chunking) · Azure AI Search
@@ -330,6 +335,27 @@ doesn't spend its first request downloading 130 MB.
 
 **Scale it to one replica**, or move the spend cap to shared state first — see
 *What I'd change*.
+
+> **Windows gotcha.** `az containerapp up --source` streams the remote ACR build
+> log through `colorama`, which encodes to the console codepage. On a `cp1252`
+> console the build output kills the CLI mid-deploy:
+>
+> ```
+> UnicodeEncodeError: 'charmap' codec can't encode characters in position 2728-2767
+> ```
+>
+> The **build itself is unaffected** — it keeps running server-side, and the CLI
+> crash just abandons the deploy half-finished (registry and environment
+> created, app not). Either force UTF-8 first:
+>
+> ```powershell
+> chcp 65001
+> $env:PYTHONIOENCODING = "utf-8"
+> ```
+>
+> …or decouple the steps, which is what this project does: `az acr build` to
+> produce the image, then `az containerapp create --image` to deploy it. Worth
+> decoupling anyway — a failed deploy shouldn't require rebuilding the image.
 
 ---
 
