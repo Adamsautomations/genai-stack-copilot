@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # The unit tests cover the pure cost-accounting logic, which needs only
+      # httpx (what src/llm.py imports). The full pipeline's heavier deps aren't
+      # required to exercise it.
+      - run: pip install httpx pytest
+      - run: pytest -q
+        env:
+          PYTHONPATH: .
